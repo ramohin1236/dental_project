@@ -205,14 +205,14 @@ export default function Navbar() {
                       My Orders
                     </Link>
                     <Link
-                      href="/favorite"
+                      href="/favourite"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       onClick={() => setIsDropdownOpen(false)}
                     >
                       Favourite
                     </Link>
                     <Link
-                      href="/ai-support"
+                      href="/ai_support"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       onClick={() => setIsDropdownOpen(false)}
                     >
@@ -310,7 +310,7 @@ export default function Navbar() {
                 Product
               </Link>
               <Link
-                href="/all-category"
+                href="/allcategory"
                 className="text-white hover:text-gray-300 transition-colors"
                 onClick={toggleMenu}
               >

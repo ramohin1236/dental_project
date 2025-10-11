@@ -30,6 +30,7 @@ export default function Subscribe() {
       setMessage({ type: "error", text: "Please enter a valid email!" });
       return;
     }
+    
 
     try {
       const res = await subscribe({ email: value }).unwrap();

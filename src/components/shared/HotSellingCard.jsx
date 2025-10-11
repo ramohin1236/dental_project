@@ -21,7 +21,7 @@ const HotSellingCard = ({
   });
 
   const handleWishlistClick = () => {
-    router.push("/favorite");
+    router.push("/favourite");
   };
 
   return (

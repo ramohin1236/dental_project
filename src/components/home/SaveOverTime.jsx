@@ -52,7 +52,7 @@ const SaveOverTime = () => {
       </div>
 
       {/* Chart Container */}
-      <div className="h-48 sm:h-64 md:h-80 lg:h-96 w-full px-2 sm:px-4 md:px-0">
+      <div className="h-48 sm:h-64 md:h-80 lg:h-full w-full px-2 sm:px-4 md:px-0">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={chartData}
