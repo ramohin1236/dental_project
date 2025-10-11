@@ -8,13 +8,14 @@ import sliderApi from './feature/slider/sliderApi';
 import blogApi from './feature/blog/blogApi';
 import newsletterApi from './feature/newsletter/newsletterApi';
 import singleAddressApi from './feature/address/addressApi';
+import hotSellingApi from './feature/hotSellingApi/HotSellingApi';
 
 
 
 export const store = configureStore({
     reducer: {
         [authApi.reducerPath] : authApi.reducer,
-        auth: authReducer,
+        // auth: authReducer,
         [productsApi.reducerPath]: productsApi.reducer,
         [categoriesApi.reducerPath]: categoriesApi.reducer,
         [brandApi.reducerPath]: brandApi.reducer,
@@ -22,9 +23,10 @@ export const store = configureStore({
         [sliderApi.reducerPath]: sliderApi.reducer,
         [blogApi.reducerPath]: blogApi.reducer,
         [newsletterApi.reducerPath]: newsletterApi.reducer,
-        [singleAddressApi.reducerPath]: singleAddressApi.reducer
+        [singleAddressApi.reducerPath]: singleAddressApi.reducer,
+        [hotSellingApi.reducerPath]: hotSellingApi.reducer
     },
 
     middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(authApi.middleware, productsApi.middleware, categoriesApi.middleware, brandApi.middleware, procedureApi.middleware, sliderApi.middleware, blogApi.middleware, newsletterApi.middleware, singleAddressApi.middleware)
+        getDefaultMiddleware().concat(authApi.middleware, productsApi.middleware, categoriesApi.middleware, brandApi.middleware, procedureApi.middleware, sliderApi.middleware, blogApi.middleware, newsletterApi.middleware, singleAddressApi.middleware, hotSellingApi.middleware)
 })

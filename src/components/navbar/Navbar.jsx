@@ -127,13 +127,13 @@ export default function Navbar() {
               Product
             </Link>
             <Link
-              href="/all-category"
+              href="/allcategory"
               className="text-white hover:text-gray-300 transition-colors"
             >
               Category
             </Link>
             <Link
-              href="/procedure-guide"
+              href="/procedure_guide"
               className="text-white hover:text-gray-300 transition-colors"
             >
               Procedure Guide
