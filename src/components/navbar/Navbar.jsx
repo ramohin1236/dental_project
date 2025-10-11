@@ -218,15 +218,16 @@ export default function Navbar() {
                     >
                       Support
                     </Link>
-                    <button
+                    <Link
+                      href='/signup'
                       className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                       onClick={() => {
-                        navigate("/signup");
-                        setIsDropdownOpen(false);
+                        // navigate("/signup");
+                        // setIsDropdownOpen(false);
                       }}
                     >
                       Logout
-                    </button>
+                    </Link>
                   </div>
                 )}
               </div>
