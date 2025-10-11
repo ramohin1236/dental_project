@@ -1,22 +1,27 @@
-"use client"
+"use client";
 import React from "react";
 import { useState } from "react";
 import { IoEyeOffOutline, IoEyeOutline } from "react-icons/io5";
 import { FiCamera, FiX } from "react-icons/fi";
 import { useRegisterUserMutation } from "@/redux/feature/auth/authApi";
 import Link from "next/link";
+import Swal from "sweetalert2";
+import { useRouter } from "next/navigation";
+
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
-    gdc_no: "",
+    gdcNo: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-
-  const [registerUser, {isLoading,error}] = useRegisterUserMutation()
+  const router = useRouter()
+  const [registerUser, { isLoading, error }] = useRegisterUserMutation();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,6 +46,44 @@ export default function SignUp() {
   const removeImage = () => {
     setProfileImage(null);
     setImagePreview(null);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const data = new FormData();
+      data.append("firstName", formData.firstName);
+      data.append("lastName", formData.lastName);
+      data.append("email", formData.email);
+      data.append("password", formData.password);
+
+
+      if (formData.gdcNo) {
+        data.append("gdcNo", formData.gdcNo);
+      }
+
+      if (profileImage) {
+        data.append("image", profileImage);
+      }
+
+      const res = await registerUser(data).unwrap();
+
+      Swal.fire({
+        icon: "success",
+        title: "Signup Successful!",
+        text: "Welcome aboard!",
+      });
+
+      router.push("/sign_in");
+    } catch (err) {
+      console.error("Signup failed:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Signup Failed",
+        text: err?.data?.message || "Something went wrong",
+      });
+    }
   };
 
   return (
@@ -79,7 +122,7 @@ export default function SignUp() {
                       </div>
                     </>
                   )}
-                  
+
                   {/* Upload Button - positioned to cover only the circle */}
                   <input
                     type="file"
@@ -90,7 +133,7 @@ export default function SignUp() {
                   />
                 </div>
               </div>
-              
+
               {/* Remove Button */}
               {imagePreview && (
                 <button
@@ -101,14 +144,12 @@ export default function SignUp() {
                   <FiX />
                 </button>
               )}
-              
+
               {/* Pulse Animation Ring */}
               {!imagePreview && (
                 <div className="absolute inset-0 rounded-full border-2 border-[#136BFB]/30 animate-pulse pointer-events-none"></div>
               )}
             </div>
-            
-         
           </div>
 
           <h1 className="text-center text-3xl font-bold text-white mb-2">
@@ -118,7 +159,7 @@ export default function SignUp() {
             Please enter your information to create account
           </p>
 
-          <form className="space-y-5">
+          <form className="space-y-5" onSubmit={handleSubmit}>
             <div className="flex gap-5">
               <div>
                 <label className="block text-white font-bold text-lg mb-2">
@@ -126,10 +167,10 @@ export default function SignUp() {
                 </label>
                 <input
                   type="text"
-                  name="first_name"
-                  value={formData.first_name}
+                  name="firstName"
+                  value={formData.firstName}
                   onChange={handleChange}
-                  placeholder="Enter your email"
+                  placeholder="Enter your first name"
                   className="w-full px-4 py-3 bg-[#2D2D2D] text-white rounded-lg border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
                   required
                 />
@@ -140,15 +181,16 @@ export default function SignUp() {
                 </label>
                 <input
                   type="text"
-                  name="last_name"
-                  value={formData.last_name}
+                  name="lastName"
+                  value={formData.lastName}
                   onChange={handleChange}
-                  placeholder="Enter your email"
+                  placeholder="Enter your last name"
                   className="w-full px-4 py-3 bg-[#2D2D2D] text-white rounded-lg border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
                   required
                 />
               </div>
             </div>
+
             <div>
               <label className="block text-white font-bold text-lg mb-2">
                 Email
@@ -163,20 +205,21 @@ export default function SignUp() {
                 required
               />
             </div>
+
             <div>
               <label className="block text-white font-bold text-lg mb-2">
-                GDC No
+                GDC No <span className="text-gray-400 text-sm">(optional)</span>
               </label>
               <input
-                type="number"
-                name="gdc_no"
-                value={formData.gdc_no}
+                type="text"
+                name="gdcNo"
+                value={formData.gdcNo}
                 onChange={handleChange}
-                placeholder="Enter your GDC No"
+                placeholder="Enter your GDC number (optional)"
                 className="w-full px-4 py-3 bg-[#2D2D2D] text-white rounded-lg border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
-                required
               />
             </div>
+
             <div>
               <label className="block text-white font-bold text-lg mb-2">
                 Password
@@ -205,18 +248,16 @@ export default function SignUp() {
               </div>
             </div>
 
-            <Link href="/login">
-              <button
-                type="submit"
-                className="w-full bg-[#136BFB] text-white font-bold py-3 px-4 rounded-lg transition mt-5"
-              >
-                Sign Up
-              </button>
-            </Link>
+            <button
+              type="submit"
+              className="w-full bg-[#136BFB] text-white font-bold py-3 px-4 rounded-lg transition mt-5"
+            >
+              {isLoading ? "Creating Account..." : "Sign Up"}
+            </button>
 
             <p className="text-center text-[#9F9C96] mt-5">
               Already have an account?{" "}
-              <Link href="/login" className="text-[#136BFB]">
+              <Link href="/sign_in" className="text-[#136BFB]">
                 Log In
               </Link>
             </p>

@@ -198,7 +198,7 @@ export default function Navbar() {
                       My Profile
                     </Link>
                     <Link
-                      href="/my-orders"
+                      href="/my_order"
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       onClick={() => setIsDropdownOpen(false)}
                     >

@@ -31,7 +31,7 @@ export default function Otp() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    navigate("/reset-password");
+    // navigate("/forget_pass");
   };
 
   return (
