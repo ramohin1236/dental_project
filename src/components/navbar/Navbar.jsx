@@ -1,16 +1,19 @@
-"use client"
+"use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation";
 import React, { useRef, useState, useEffect } from "react";
 import { CiSearch } from "react-icons/ci";
 import { FaRegUser, FaTimes, FaBars } from "react-icons/fa";
 import { FiUserPlus } from "react-icons/fi";
 import { RiShoppingCart2Line } from "react-icons/ri";
 import { VscSettings } from "react-icons/vsc";
-
+import { useSelector } from "react-redux";
 
 export default function Navbar() {
+  const products = useSelector((state) => state.cart);
+  const totalProduct = products?.products?.length ?? 0;
+  const [mounted, setMounted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -27,6 +30,11 @@ export default function Navbar() {
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    // mark mounted on client so we can avoid rendering client-only dynamic values
+    setMounted(true);
   }, []);
 
   const toggleMenu = () => {
@@ -85,17 +93,24 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-[#171716] text-white px-4 py-3 sticky top-0 z-50">
+    <nav className="bg-[#171716] text-white px-2 sm:px-4 md:px-6 py-3 sticky top-0 z-50">
       <div className="container mx-auto relative">
         {/* Mobile Header */}
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="w-[80px] h-[60px] flex items-center justify-center md:w-[100px] md:h-[70px]">
-            <img src="/logo.svg" alt="company logo" className="h-full w-auto" />
+          <Link href="/" className="flex items-center justify-center">
+            <img
+              src="/logo.svg"
+              alt="company logo"
+              className="h-8 w-auto sm:h-10 md:h-12 lg:h-14"
+            />
           </Link>
 
           {/* Mobile Menu Button */}
-          <div className="flex items-center space-x-3 md:hidden">
+          <div className="flex items-center space-x-2 md:hidden">
+            <Link href="/my_cart" className="text-white p-2">
+              <RiShoppingCart2Line className="h-5 w-5" />
+            </Link>
             <button onClick={toggleSearch} className="text-white p-2">
               <CiSearch className="h-5 w-5" />
             </button>
@@ -113,7 +128,7 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
             <Link
               href="/"
               className="text-white hover:text-gray-300 transition-colors"
@@ -150,29 +165,35 @@ export default function Navbar() {
             >
               Blog
             </Link>
-
-
           </div>
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center justify-end space-x-2">
-            <div className="relative">
+              <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <CiSearch className="h-4 w-4 text-[#136BFB]" />
               </div>
               <input
                 type="text"
                 placeholder="Search..."
-                className="bg-black border border-[#136BFB] rounded-xl pl-10 pr-4 py-2 text-white placeholder-[#136BFB] focus:outline-none w-64"
+                className="bg-black border border-[#136BFB] rounded-xl pl-10 pr-4 py-2 text-white placeholder-[#136BFB] focus:outline-none w-40 sm:w-48 md:w-64"
               />
               <button className="absolute inset-y-0 right-0 pr-3 flex items-center">
                 <VscSettings className="h-5 w-5 text-[#136BFB]" />
               </button>
             </div>
             <div className="flex-1 flex items-center justify-end space-x-2">
-              <button className="w-full flex items-center justify-center px-0 py-2 border border-[#136BFB] text-[#136BFB] rounded-lg">
-                <RiShoppingCart2Line className="h-5 w-5" />
-              </button>
+              <div className="w-full relative flex">
+                <Link
+                  href="/my_cart"
+                  className="w-full flex items-center justify-center px-3 py-2 border border-[#136BFB] text-[#136BFB] rounded-lg"
+                >
+                  <RiShoppingCart2Line className="h-5 w-5" />
+                </Link>
+                <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                  <p>{mounted ? totalProduct : 0}</p>
+                </div>
+              </div>
               <div className="relative" ref={dropdownRef}>
                 <div
                   className="flex items-center cursor-pointer group"
@@ -219,7 +240,7 @@ export default function Navbar() {
                       Support
                     </Link>
                     <Link
-                      href='/signup'
+                      href="/signup"
                       className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                       onClick={() => {
                         // navigate("/signup");
@@ -263,8 +284,9 @@ export default function Navbar() {
 
       {/* Mobile Menu Overlay and Content */}
       <div
-        className={`fixed inset-0 z-40 transition-opacity duration-300 ${isMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-          }`}
+        className={`fixed inset-0 z-40 transition-opacity duration-300 ${
+          isMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
         onClick={toggleMenu}
       >
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
@@ -272,8 +294,9 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       <div
-        className={`mobile-menu-container fixed top-0 left-0 h-full w-4/5 max-w-xs bg-[#171716] z-50 transform transition-transform duration-300 ease-in-out ${isMenuOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
+        className={`mobile-menu-container fixed top-0 left-0 h-full w-4/5 max-w-xs bg-[#171716] z-50 transform transition-transform duration-300 ease-in-out ${
+          isMenuOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
         <div className="p-6 h-full flex flex-col">
           <div className="flex justify-between items-center mb-8">
@@ -294,7 +317,6 @@ export default function Navbar() {
           </div>
 
           <nav className="flex-1 overflow-y-auto">
-
             <div className="flex flex-col space-y-5">
               <Link
                 href="/"
@@ -338,21 +360,37 @@ export default function Navbar() {
               >
                 Blog
               </Link>
-
-
             </div>
 
             <div className="mt-8 pt-6 border-t border-gray-700">
               <div className="flex flex-col space-y-4">
-                <button onClick={() => { navigate("/login"); toggleMenu(); }} className="cursor-pointer w-full flex items-center justify-center space-x-2 px-4 py-3 border border-[#136BFB] text-[#136BFB] rounded-lg">
+                <button
+                  onClick={() => {
+                    navigate("/login");
+                    toggleMenu();
+                  }}
+                  className="cursor-pointer w-full flex items-center justify-center space-x-2 px-4 py-3 border border-[#136BFB] text-[#136BFB] rounded-lg"
+                >
                   <FaRegUser className="h-4 w-4" />
                   <span>Log in</span>
                 </button>
-                <button onClick={() => { navigate("/signup"); toggleMenu(); }} className="cursor-pointer w-full flex items-center justify-center space-x-2 px-4 py-3 bg-[#136BFB] text-white rounded-lg">
+                <button
+                  onClick={() => {
+                    navigate("/signup");
+                    toggleMenu();
+                  }}
+                  className="cursor-pointer w-full flex items-center justify-center space-x-2 px-4 py-3 bg-[#136BFB] text-white rounded-lg"
+                >
                   <FiUserPlus className="h-4 w-4" />
                   <span>Sign up</span>
                 </button>
-                <button onClick={() => { navigate("/shopping-cart"); toggleMenu(); }} className="cursor-pointer w-full flex items-center justify-center space-x-2 px-4 py-3 border border-[#136BFB] text-[#136BFB] rounded-lg">
+                <button
+                  onClick={() => {
+                    navigate("/shopping-cart");
+                    toggleMenu();
+                  }}
+                  className="cursor-pointer w-full flex items-center justify-center space-x-2 px-4 py-3 border border-[#136BFB] text-[#136BFB] rounded-lg"
+                >
                   <RiShoppingCart2Line className="h-5 w-5" />
                   <span>Cart</span>
                 </button>

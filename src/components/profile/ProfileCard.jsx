@@ -1,4 +1,5 @@
 "use client"
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { FaPhoneAlt } from "react-icons/fa";
@@ -31,9 +32,9 @@ export default function ProfileCard({
                 <div className="flex items-center gap-2 mb-4 text-center">
                         <h2 className="text-2xl font-bold text-white">{name}</h2>
                        
-                            <button onClick={() => navigate('/edit-profile')}>
+                            <Link href="update_profile" >
                                 <TbUserEdit className="w-5 h-5 text-[#136BFB] cursor-pointer" />
-                            </button>
+                            </Link>
                         
                 </div>
             </div>
@@ -55,13 +56,14 @@ export default function ProfileCard({
                 </div>
             </div>
 
-            <button
-                onClick={() => navigate('/change-password')}
+            <Link
+            href='/changes_pass'
+                
                 className="w-full bg-neutral-700 text-gray-500 py-3 px-4 rounded-lg flex items-center justify-between"
             >
                 <span>Change Password</span>
                 <img src="/arrow-right.png" alt="arrow-right" />
-            </button>
+            </Link>
         </div>
     );
 }

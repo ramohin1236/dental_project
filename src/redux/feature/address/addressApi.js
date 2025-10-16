@@ -11,11 +11,10 @@ const singleAddressApi = createApi({
   endpoints: (builder) => ({
    fetchUserAddressesById: builder.query({
   query: (userId) => ({
-    url: `/addresses/user/${userId}`,
+    url: `/addresses/${userId}`,
     method: "GET",
   }),
   providesTags: ["Address"],
-  transformResponse: (response) => response.data,
 }),
   }),
 });

@@ -36,6 +36,7 @@ export default function Product() {
   });
 
   const products = data?.data || [];
+  console.log(products)
   const totalProducts = data?.total || 0;
   const totalPages = Math.ceil(totalProducts / productPerPage);
 
@@ -319,7 +320,8 @@ export default function Product() {
               {products.map((product) => (
                 <HotSellingCard
                   key={product._id}
-                  id={product?._id}
+                  id={product?.productId}
+                  product={product}
                   image={`${getBaseUrl()}${product?.images?.[0]}`}
                   title={product.name}
                   description={product.description}

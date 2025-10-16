@@ -1,12 +1,15 @@
 "use client"
 import BreadCrumb from "@/components/shared/BreadCrumb";
 import SectionHeading from "@/components/shared/SectionHeading";
+import { addToCart } from "@/redux/feature/cart/cartSlice";
+import { useAddToCartMutation } from "@/redux/feature/cart/cartApi";
 import { useFetchProductbyIdQuery } from "@/redux/feature/products/productsApi";
 import { getBaseUrl } from "@/utils/getBaseUrl";
 import { useParams,useRouter } from "next/navigation";
 
 import React, { useState, useEffect } from "react";
 import { FaTruck, FaUndo, FaMedal } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
 
 
 const ProductDetails = () => {
@@ -15,11 +18,14 @@ const ProductDetails = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const dispatch = useDispatch()
+  const [addToCartMutation] = useAddToCartMutation();
 
   const { data, isLoading, isError } = useFetchProductbyIdQuery(id);
   const product = data;
   console.log(product);
-  const IsLogin = false;
+  const user = useSelector((state) => state?.auth?.user);
+  const IsLogin = !!user;
 
   // image select
   useEffect(() => {
@@ -27,6 +33,15 @@ const ProductDetails = () => {
       setSelectedImage(`${getBaseUrl()}${product.images[0]}`);
     }
   }, [product]);
+
+  const handleAddToCart = async (product) => {
+    try {
+      await addToCartMutation({ product, quantity }).unwrap();
+    } catch (e) {
+      // ignore server error to keep UI responsive
+    }
+    dispatch(addToCart(product));
+  }
 
   if (isLoading)
     return (
@@ -180,7 +195,7 @@ const ProductDetails = () => {
                 Buy Now
               </button>
               <button
-                onClick={() => navigate("/shopping-cart")}
+                onClick={()=>handleAddToCart(product)}
                 className="border border-[#136BFB] text-[#136BFB] px-6 md:px-8 py-2.5 md:py-3 rounded-md font-medium w-full sm:w-auto whitespace-nowrap"
               >
                 Add To Cart

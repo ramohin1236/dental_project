@@ -2,13 +2,18 @@
 import Link from "next/link";
 import React from "react";
 import { useState } from "react";
-import {  IoClose } from "react-icons/io5";
-
+import { IoClose } from "react-icons/io5";
+import { useRouter } from "next/navigation";
+import { useForgotPasswordMutation } from "@/redux/feature/auth/authApi";
 
 export default function ForgetPassword() {
   const [formData, setFormData] = useState({
     email: "",
   });
+  
+  const [forgotPassword, { isLoading, isError, error, isSuccess }] = useForgotPasswordMutation();
+
+  const router = useRouter();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -16,6 +21,21 @@ export default function ForgetPassword() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const result = await forgotPassword(formData.email).unwrap();
+      console.log("OTP sent successfully:", result);
+      
+      // Email local storage e save koro ar OTP page e navigate koro
+      localStorage.setItem("forgotPasswordEmail", formData.email);
+      router.push("/otp");
+      
+    } catch (err) {
+      console.error("Failed to send OTP:", err);
+    }
   };
 
   return (
@@ -26,7 +46,7 @@ export default function ForgetPassword() {
           <h1 className="text-center text-3xl font-bold text-white mb-4">Forgot Password</h1>
           <p className="text-center text-[#9F9C96] mb-8">Please enter your Email to reset your password.</p>
 
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label className="block text-white font-bold text-lg mb-2">Email</label>
               <input
@@ -40,17 +60,27 @@ export default function ForgetPassword() {
               />
             </div>
 
+            {/* Error Message */}
+            {isError && (
+              <div className="text-red-500 text-center">
+                {error?.data?.message || "Something went wrong!"}
+              </div>
+            )}
 
-            <Link href="/verify-mail">
-              <button
-                type="submit"
-                className="w-full bg-[#136BFB] text-white text-lg font-bold py-3 px-4 rounded-lg transition mt-5"
-              >
-                Get OTP
-              </button>
-            </Link>
+            {/* Success Message */}
+            {isSuccess && (
+              <div className="text-green-500 text-center">
+                OTP sent successfully to your email!
+              </div>
+            )}
 
-
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-[#136BFB] text-white text-lg font-bold py-3 px-4 rounded-lg transition mt-5 disabled:bg-gray-400"
+            >
+              {isLoading ? "Sending..." : "Get OTP"}
+            </button>
           </form>
         </div>
       </div>
