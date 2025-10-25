@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import Swal from "sweetalert2";
 
-const initialState = JSON.parse(localStorage.getItem("cart")) || {
+const initialState = JSON.parse(localStorage?.getItem("cart")) || {
   products: [],
   selectedItems: 0,
   totalPrice: 0,

@@ -85,50 +85,62 @@ const ShoppingCart = () => {
     };
 
     // Handle quantity updates optimistically, then sync to server via PATCH
-    const handleUpdateQuantity = async (cartItemId, type) => {
-        const product = products.find(p => p.cartItemId === cartItemId);
-        if (!product) return;
+   // Cart page - handleUpdateQuantity function এ এই ২টা line যোগ করুন
+const handleUpdateQuantity = async (cartItemId, type) => {
+  const product = products.find(p => p.cartItemId === cartItemId);
+  if (!product) return;
 
-        const current = quantitiesMap[cartItemId] ?? product.quantity ?? 1;
-        const next = type === 'increment' ? current + 1 : Math.max(1, current - 1);
+  const current = quantitiesMap[cartItemId] ?? product.quantity ?? 1;
+  const next = type === 'increment' ? current + 1 : Math.max(1, current - 1);
 
-        // Optimistic update
-        setQuantitiesMap((prev) => ({ ...prev, [cartItemId]: next }));
-        
-        try {
-            await updateCartItem({ 
-                productId: product._id, 
-                quantity: next 
-            }).unwrap();
-        } catch (e) {
-            // revert on failure
-            setQuantitiesMap((prev) => ({ ...prev, [cartItemId]: current }));
-            console.error('Failed to update quantity', e);
-        }
-    };
+  // Optimistic update - UI তে immediately change দেখাবে
+  setQuantitiesMap((prev) => ({ ...prev, [cartItemId]: next }));
+  
+  // ✅✅✅ IMPORTANT: Redux store এও update করুন
+  dispatch(setItemQuantity({ id: product._id, quantity: next }));
+  
+  try {
+    await updateCartItem({ 
+      productId: product._id, 
+      quantity: next 
+    }).unwrap();
+  } catch (e) {
+    // revert on failure
+    setQuantitiesMap((prev) => ({ ...prev, [cartItemId]: current }));
+    // ✅✅✅ Redux store ও revert করুন
+    dispatch(setItemQuantity({ id: product._id, quantity: current }));
+    console.error('Failed to update quantity', e);
+  }
+};
 
-    const handleDirectQuantityChange = async (cartItemId, newQuantity) => {
-        const product = products.find(p => p.cartItemId === cartItemId);
-        if (!product) return;
+   // Cart page - handleDirectQuantityChange function এ
+const handleDirectQuantityChange = async (cartItemId, newQuantity) => {
+  const product = products.find(p => p.cartItemId === cartItemId);
+  if (!product) return;
 
-        const current = quantitiesMap[cartItemId] ?? product.quantity ?? 1;
-        const parsed = parseInt(newQuantity, 10);
-        const next = Math.max(1, isNaN(parsed) ? 1 : parsed);
+  const current = quantitiesMap[cartItemId] ?? product.quantity ?? 1;
+  const parsed = parseInt(newQuantity, 10);
+  const next = Math.max(1, isNaN(parsed) ? 1 : parsed);
 
-        // Optimistic update
-        setQuantitiesMap((prev) => ({ ...prev, [cartItemId]: next }));
+  // Optimistic update
+  setQuantitiesMap((prev) => ({ ...prev, [cartItemId]: next }));
+  
+  // ✅✅✅ IMPORTANT: Redux store এও update করুন
+  dispatch(setItemQuantity({ id: product._id, quantity: next }));
 
-        try {
-            await updateCartItem({
-                productId: product._id,
-                quantity: next,
-            }).unwrap();
-        } catch (e) {
-            // revert on failure
-            setQuantitiesMap((prev) => ({ ...prev, [cartItemId]: current }));
-            console.error('Failed to set quantity', e);
-        }
-    };
+  try {
+    await updateCartItem({
+      productId: product._id,
+      quantity: next,
+    }).unwrap();
+  } catch (e) {
+    // revert on failure
+    setQuantitiesMap((prev) => ({ ...prev, [cartItemId]: current }));
+    // ✅✅✅ Redux store ও revert করুন
+    dispatch(setItemQuantity({ id: product._id, quantity: current }));
+    console.error('Failed to set quantity', e);
+  }
+};
 
     const handleDeleteSelected = async () => {
         const selected = products.filter(p => selectedMap[p.cartItemId]);
