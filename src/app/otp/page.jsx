@@ -1,16 +1,31 @@
-"use client"
-import { useVerifyOtpMutation } from "@/redux/feature/auth/authApi";
+"use client";
+import {
+  useVerifyOtpMutation,
+  useForgotPasswordMutation,
+} from "@/redux/feature/auth/authApi";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { IoClose } from "react-icons/io5";
 
-
 export default function Otp() {
-  const [code, setCode] = useState(new Array(6).fill("")); // 6 digit OTP
-  const [verifyOtp, { isLoading, isError, error, isSuccess }] = useVerifyOtpMutation();
+  const [code, setCode] = useState(new Array(6).fill(""));
+  const [verifyOtp, { isLoading, isError, error, isSuccess }] =
+    useVerifyOtpMutation();
+  const [forgotPassword, { isLoading: isResending }] =
+    useForgotPasswordMutation();
+  const [resendMsg, setResendMsg] = useState("");
+  const [email, setEmail] = useState("");
   const navigate = useRouter();
+
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("forgotPasswordEmail");
+    if (savedEmail) {
+      setEmail(savedEmail);
+      console.log("Email from localStorage:", savedEmail);
+    }
+  }, []);
 
   const handleChange = (value, index) => {
     if (!isNaN(value)) {
@@ -18,7 +33,6 @@ export default function Otp() {
       newCode[index] = value;
       setCode(newCode);
 
-      // Move to next input
       if (value && index < 5) {
         document.getElementById(`code-${index + 1}`).focus();
       }
@@ -26,59 +40,122 @@ export default function Otp() {
   };
 
   const handleKeyDown = (e, index) => {
-    if (e.key === 'Backspace' && !code[index] && index > 0) {
-      // Move to previous input on backspace
+    if (e.key === "Backspace" && !code[index] && index > 0) {
       document.getElementById(`code-${index - 1}`).focus();
     }
   };
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  const otpCode = code.join('');
-  const email = localStorage.getItem("forgotPasswordEmail");
-  
-  if (otpCode.length !== 6) {
-    alert("Please enter 6 digit OTP");
-    return;
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  try {
-    const result = await verifyOtp({
-      email: email,
-      code: parseInt(otpCode)
-    }).unwrap();
-    
-    console.log("OTP verified successfully:", result);
-    
-    // ✅ EKHAN THEKE CHANGE KORO - resetToken properly save koro
-    if (result.data && result.data.resetToken) {
-      localStorage.setItem("resetToken", result.data.resetToken);
-      console.log("Reset token saved:", result.data.resetToken);
-    } else if (result.resetToken) {
-      localStorage.setItem("resetToken", result.resetToken);
-      console.log("Reset token saved:", result.resetToken);
-    } else {
-      console.log("No reset token in response:", result);
+    const otpCode = code.join("");
+
+    if (otpCode.length !== 6) {
+      alert("Please enter 6 digit OTP");
+      return;
     }
-    
-    // Password reset page e navigate koro
-    navigate.push("/reset-password");
-    
-  } catch (err) {
-    console.error("Failed to verify OTP:", err);
-  }
-};
+
+    if (!email) {
+      alert("Email not found. Please try again.");
+      return;
+    }
+
+    console.log(" Sending OTP verification:", {
+      email: email,
+      code: otpCode,
+    });
+
+    try {
+      const result = await verifyOtp({
+        email: email,
+        code: parseInt(otpCode),
+      }).unwrap();
+
+      console.log("✅ OTP verified successfully:", result);
+
+      if (result.statusCode === 200) {
+        console.log("🎉 Email verified successfully");
+
+        if (result.data && result.data.resetToken) {
+          localStorage.setItem("resetToken", result.data.resetToken);
+          console.log(
+            " Reset token saved (data.resetToken):",
+            result.data.resetToken
+          );
+        } else if (result.resetToken) {
+          localStorage.setItem("resetToken", result.resetToken);
+          console.log(" Reset token saved (resetToken):", result.resetToken);
+        } else if (result.data) {
+          localStorage.setItem("resetToken", result.data);
+          console.log(" Reset token saved (data):", result.data);
+        } else {
+          console.log(" Verification successful, no reset token needed");
+        }
+
+        navigate.push("/reset-password");
+      } else {
+        console.log(" Unexpected response:", result);
+        alert(result.message || "Verification failed");
+      }
+    } catch (err) {
+      console.error(" Failed to verify OTP:", err);
+      console.error("Error details:", err.data);
+
+      const errorMessage =
+        err?.data?.message ||
+        err?.error ||
+        "Verification failed. Please try again.";
+      alert(errorMessage);
+    }
+  };
+
+  const handleResend = async () => {
+    if (!email) {
+      alert("Email not found. Please try forgot password again.");
+      return;
+    }
+
+    setResendMsg("");
+    console.log("📨 Resending code to:", email);
+
+    try {
+      const result = await forgotPassword({ email: email }).unwrap();
+      console.log(" Resend successful:", result);
+      setResendMsg("A new verification code has been sent to your email.");
+    } catch (e) {
+      console.error(" Resend failed:", e);
+      setResendMsg(
+        e?.data?.message || "Failed to resend code. Please try again."
+      );
+    }
+  };
+
+  useEffect(() => {
+    console.log("🔍 Component State:", {
+      email,
+      code,
+      isLoading,
+      isError,
+      isSuccess,
+      error: error?.data,
+    });
+  }, [email, code, isLoading, isError, isSuccess, error]);
 
   return (
     <div className="flex min-h-screen bg-white">
-      {/* Left Column - Form */}
       <div className="w-full md:w-1/2 bg-[#171717] p-8 flex flex-col justify-center relative">
         <div className="max-w-md mx-auto w-full">
-          <h1 className="text-center text-3xl font-bold text-white mb-4">Verification Code</h1>
-          <p className="text-center text-[#9F9C96] mb-8">
+          <h1 className="text-center text-3xl font-bold text-white mb-4">
+            Verification Code
+          </h1>
+          <p className="text-center text-[#9F9C96] mb-2">
             We have sent the verification code to your email
           </p>
+          {email && (
+            <p className="text-center text-[#136BFB] mb-6 font-medium">
+              {email}
+            </p>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="flex justify-between max-w-md mx-auto mb-8">
@@ -96,34 +173,67 @@ export default function Otp() {
               ))}
             </div>
 
-            {/* Error Message */}
             {isError && (
-              <div className="text-red-500 text-center">
+              <div className="text-red-500 text-center bg-red-900/20 p-3 rounded">
                 {error?.data?.message || "Invalid OTP! Please try again."}
+              </div>
+            )}
+
+            {resendMsg && (
+              <div
+                className={`text-center text-sm p-3 rounded ${
+                  resendMsg.includes("Failed")
+                    ? "bg-red-900/20 text-red-400"
+                    : "bg-green-900/20 text-green-400"
+                }`}
+              >
+                {resendMsg}
               </div>
             )}
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#136BFB] text-white text-lg font-bold py-3 px-4 rounded-lg transition hover:bg-blue-700 disabled:bg-gray-400"
+              className="w-full bg-[#136BFB] text-white text-lg font-bold py-3 px-4 rounded-lg transition hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               {isLoading ? "Verifying..." : "Verify Code"}
             </button>
+
+            <button
+              type="button"
+              disabled={isResending || !email}
+              onClick={handleResend}
+              className="w-full mt-3 border border-[#136BFB] text-[#136BFB] text-lg font-bold py-3 px-4 rounded-lg transition hover:bg-[#0f5ed11a] disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isResending ? "Resending..." : "Resend Code"}
+            </button>
           </form>
+
+          {process.env.NODE_ENV === "development" && (
+            <div className="mt-6 p-3 bg-gray-800 rounded text-xs text-gray-400">
+              <p>Debug: Email - {email || "Not found"}</p>
+              <p>OTP: {code.join("")}</p>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Right Column - Illustration */}
       <div className="hidden md:flex md:w-1/2 bg-[#162236] items-center justify-center relative">
         <div className="absolute top-4 right-4">
-          <Link href="/" className="text-white hover:bg-blue-700 p-2 rounded-full inline-block">
+          <Link
+            href="/"
+            className="text-white hover:bg-blue-700 p-2 rounded-full inline-block"
+          >
             <IoClose size={24} />
           </Link>
         </div>
         <div className="text-center px-12">
           <div className="w-[400px] h-[400px] mx-auto">
-            <img src="/otp.svg" alt="Verification" className="w-full h-full object-contain" />
+            <img
+              src="/otp.svg"
+              alt="Verification"
+              className="w-full h-full object-contain"
+            />
           </div>
         </div>
       </div>

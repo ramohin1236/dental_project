@@ -9,7 +9,7 @@ import procedureApi from './feature/procedure/procedure';
 import sliderApi from './feature/slider/sliderApi';
 import blogApi from './feature/blog/blogApi';
 import newsletterApi from './feature/newsletter/newsletterApi';
-import singleAddressApi from './feature/address/addressApi';
+import  {addressApi} from './feature/address/addressApi';
 import hotSellingApi from './feature/hotSellingApi/HotSellingApi';
 import cartReducer from './feature/cart/cartSlice';
 
@@ -51,7 +51,7 @@ export const store = configureStore({
         [sliderApi.reducerPath]: sliderApi.reducer,
         [blogApi.reducerPath]: blogApi.reducer,
         [newsletterApi.reducerPath]: newsletterApi.reducer,
-        [singleAddressApi.reducerPath]: singleAddressApi.reducer,
+        [addressApi.reducerPath]: addressApi.reducer,
         [hotSellingApi.reducerPath]: hotSellingApi.reducer,
         cart: cartReducer
     },
@@ -67,7 +67,7 @@ export const store = configureStore({
             sliderApi.middleware,
             blogApi.middleware,
             newsletterApi.middleware,
-            singleAddressApi.middleware,
+            addressApi.middleware,
             hotSellingApi.middleware
         )
 })

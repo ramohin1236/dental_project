@@ -1,23 +1,30 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { getBaseUrl } from "../../../utils/getBaseUrl";
+import { baseQueryWithAuth } from "@/utils/baseQueryWithAuth";
+import { createApi } from "@reduxjs/toolkit/query/react";
 
-const singleAddressApi = createApi({
-  reducerPath: "singleAddressApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${getBaseUrl()}/api`,
-    credentials: "include",
-  }),
+export const addressApi = createApi({
+  reducerPath: "addressApi",
+  baseQuery: baseQueryWithAuth,
   tagTypes: ["Address"],
   endpoints: (builder) => ({
-   fetchUserAddressesById: builder.query({
-  query: (userId) => ({
-    url: `/addresses/${userId}`,
-    method: "GET",
-  }),
-  providesTags: ["Address"],
-}),
+    
+    fetchMyAddresses: builder.query({
+      query: () => '/addresses/my',
+      providesTags: ["Address"],
+    }),
+    
+    
+    addAddress: builder.mutation({
+      query: (addressData) => ({
+        url: '/addresses',
+        method: 'POST',
+        body: addressData,
+      }),
+      invalidatesTags: ["Address"],
+    }),
   }),
 });
 
-export const { useFetchUserAddressesByIdQuery } = singleAddressApi;
-export default singleAddressApi;
+export const { 
+  useFetchMyAddressesQuery,
+  useAddAddressMutation 
+} = addressApi;

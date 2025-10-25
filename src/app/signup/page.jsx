@@ -75,7 +75,7 @@ export default function SignUp() {
         text: "Welcome aboard!",
       });
 
-      router.push("/sign_in");
+      router.push("/otp");
     } catch (err) {
       console.error("Signup failed:", err);
       Swal.fire({

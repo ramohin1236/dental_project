@@ -14,12 +14,6 @@ export default function Profile() {
   console.log("Logged in user:", user);
   console.log(user?.userId)
 
-  // const {data: addressList,isLoading,error} = useFetchUserAddressesByIdQuery(user?.userId, {
-  //   skip: !user?.userId,
-  // });
-
-  // console.log("Address Response =>", addressList);
-
   if (!user || !user.userId) {
   return <p>User not found</p>;
 }
@@ -49,8 +43,6 @@ export default function Profile() {
             <div className="flex justify-center lg:justify-start">
               <div className="w-full max-w-md">
                 <AddressSection
-                  // addressList={addressList}
-                  // isLoading={isLoading}
                 />
               </div>
             </div>

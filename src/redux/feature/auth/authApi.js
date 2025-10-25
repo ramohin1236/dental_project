@@ -1,7 +1,6 @@
 import { getBaseUrl } from "@/utils/getBaseUrl";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-
 const authApi = createApi({
   reducerPath: "authApi",
   baseQuery: fetchBaseQuery({
@@ -30,14 +29,22 @@ const authApi = createApi({
         body: { email },
       }),
     }),
-     verifyOtp: builder.mutation({
+    verifyOtp: builder.mutation({
       query: (otpData) => ({
-        url: "/verify-otp",
+        url: "/email/verify",
         method: "POST",
         body: otpData,
       }),
+      transformResponse: (response) => {
+        console.log('🔧 verifyOtp transformResponse:', response);
+        return response;
+      },
+      transformErrorResponse: (response) => {
+        console.log('🔧 verifyOtp transformErrorResponse:', response);
+        return response;
+      }
     }),
-     resetPassword: builder.mutation({
+    resetPassword: builder.mutation({
       query: (resetData) => ({
         url: "/reset-password",
         method: "POST",
@@ -47,71 +54,11 @@ const authApi = createApi({
   }),
 });
 
-export const { useLoginUserMutation, useRegisterUserMutation,useForgotPasswordMutation,
-  useVerifyOtpMutation, useResetPasswordMutation } = authApi;
+export const { 
+  useLoginUserMutation, 
+  useRegisterUserMutation,
+  useForgotPasswordMutation,
+  useVerifyOtpMutation, 
+  useResetPasswordMutation 
+} = authApi;
 export default authApi;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-// import { getBaseUrl } from "../../../utils/getBaseUrl";
-
-// // query----> get method
-// // mutation -----> put, patch, delete,post
-
-// const authApi = createApi({
-//   reducerPath: "authApi",
-//   baseQuery: fetchBaseQuery({
-//     baseUrl:`${getBaseUrl()}/api/auth`,   
-//     credentials: "include",
-//   }),
-//   endpoints: (builder) => ({
-//     registerUser: builder.mutation({
-//       query: (newUser) => ({
-//         url: "/signup",
-//         method: "POST",
-//         body: newUser,
-//       }),
-//     }),
-//     loginUser: builder.mutation({
-//       query: (credentials) => ({
-//         url: "/login",
-//         method: "POST",
-//         body: credentials,
-//       }),
-//     }),
-//   }),
-// });
-
-// export const { useLoginUserMutation, useRegisterUserMutation } = authApi;
-// export default authApi;
