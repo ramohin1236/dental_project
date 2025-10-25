@@ -10,7 +10,8 @@ const AddressCard = ({
     address,
     city,
     onEdit,
-    onDelete
+    onDelete,
+    isDeleting = false
 }) => {
     const getTypeColor = (addressType) => {
         switch (addressType?.toLowerCase()) {
@@ -39,17 +40,23 @@ const AddressCard = ({
                 <div className="flex items-center gap-1">
                     <button
                         onClick={onEdit}
-                        className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                        disabled={isDeleting}
+                        className="p-2 hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         aria-label="Edit address"
                     >
                         <TbUserEdit className="w-4 h-4 text-blue-400" />
                     </button>
                     <button
                         onClick={onDelete}
-                        className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                        disabled={isDeleting}
+                        className="p-2 hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         aria-label="Delete address"
                     >
-                        <RiDeleteBinLine className="w-4 h-4 text-red-400" />
+                        {isDeleting ? (
+                            <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                            <RiDeleteBinLine className="w-4 h-4 text-red-400" />
+                        )}
                     </button>
                 </div>
             </div>
@@ -65,6 +72,13 @@ const AddressCard = ({
                     <span className="font-medium text-[#9F9C96]">Location:</span> {city}
                 </p>
             </div>
+
+            {isDeleting && (
+                <div className="mt-3 text-xs text-yellow-400 flex items-center gap-2">
+                    <div className="w-3 h-3 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+                    Deleting address...
+                </div>
+            )}
         </div>
     );
 };

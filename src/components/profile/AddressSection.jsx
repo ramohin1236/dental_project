@@ -1,12 +1,14 @@
 // AddressSection.jsx
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import AddressCard from "./AddressCard";
-import { useFetchMyAddressesQuery } from "@/redux/feature/address/addressApi";
+import { useFetchMyAddressesQuery, useDeleteAddressMutation } from "@/redux/feature/address/addressApi";
 import Link from "next/link";
 
 export default function AddressSection() {
-  const { data: addresses, isLoading, error } = useFetchMyAddressesQuery();
+  const { data: addresses, isLoading, error, refetch } = useFetchMyAddressesQuery();
+  const [deleteAddress, { isLoading: isDeleting }] = useDeleteAddressMutation();
+  const [deletingId, setDeletingId] = useState(null);
   
   console.log("API Response:", addresses);
 
@@ -15,11 +17,31 @@ export default function AddressSection() {
     // Navigate to edit page or open modal
   };
 
-  const handleDelete = (id) => {
-    console.log("Delete address:", id);
-    // Implement delete functionality
+  const handleDelete = async (id) => {
+    try {
+      setDeletingId(id);
+      console.log("Deleting address ID:", id);
+      
+      // Confirm deletion
+      const isConfirmed = window.confirm("Are you sure you want to delete this address?");
+      if (!isConfirmed) {
+        setDeletingId(null);
+        return;
+      }
+      
+      const result = await deleteAddress(id).unwrap();
+      console.log("Address deleted successfully:", result);
+      
+      // Auto refetch addresses after delete
+      refetch();
+      
+    } catch (error) {
+      console.error("Failed to delete address:", error);
+      alert(error?.data?.message || 'Failed to delete address');
+    } finally {
+      setDeletingId(null);
+    }
   };
-
 
   if (isLoading) {
     return (
@@ -63,13 +85,15 @@ export default function AddressSection() {
           addresses.map((address) => (
             <AddressCard
               key={address._id}
+              id={address._id}
               name={`${address.recipientFirstName} ${address.recipientLastName}`}
               type={address.type}
-              mobile={address.recipientEmail} // Email as mobile since no phone field
+              mobile={address.recipientEmail} 
               address={address.streetNo}
               city={`${address.city}, ${address.state}, ${address.country} - ${address.postalCode}`}
               onEdit={() => handleEdit(address._id)}
               onDelete={() => handleDelete(address._id)}
+              isDeleting={deletingId === address._id}
             />
           ))
         ) : (
@@ -82,8 +106,7 @@ export default function AddressSection() {
       </div>
 
       <Link
-      href="/add_address"
-       
+        href="/add_address"
         className="w-1/2 mx-auto bg-[#136BFB] text-white py-3 px-3 rounded-lg font-semibold flex items-center justify-center gap-2 mb-2 hover:bg-blue-600 transition-colors"
       >
         Add new Address
