@@ -1,29 +1,60 @@
-import { getBaseUrl } from "@/utils/getBaseUrl";
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+// cartApi.js
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQueryWithAuth } from "@/utils/baseQueryWithAuth";
 
-const cartApi = createApi({
+export const cartApi = createApi({
   reducerPath: "cartApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${getBaseUrl()}/api/cart`,
-    credentials: "include",
-  }),
+  baseQuery: baseQueryWithAuth,
   tagTypes: ["Cart"],
   endpoints: (builder) => ({
     addToCart: builder.mutation({
-      query: ({ product, quantity = 1 }) => ({
-        url: "/add",
+      query: ({ productId, quantity }) => ({
+        url: `/cart/add`,
         method: "POST",
-        body: { product, quantity },
+        body: { productId, quantity },
       }),
       invalidatesTags: ["Cart"],
     }),
-    // Optional: fetch cart for hydration if needed later
+
     getCart: builder.query({
-      query: () => ({ url: "/", method: "GET" }),
+      query: () => `/cart`,
       providesTags: ["Cart"],
+   
+    }),
+
+    updateCartItem: builder.mutation({
+      query: ({ productId, quantity }) => ({
+        url: `/cart/item/${productId}`,
+        method: "PATCH",
+        body: { quantity },
+      }),
+      invalidatesTags: ["Cart"],
+    }),
+
+    removeCartItem: builder.mutation({
+      query: (productId) => ({
+        url: `/cart/item/${productId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Cart"],
+    }),
+
+    clearCart: builder.mutation({
+      query: () => ({
+        url: `/cart/clear`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Cart"],
     }),
   }),
 });
 
-export const { useAddToCartMutation, useGetCartQuery } = cartApi;
+export const {
+  useAddToCartMutation,
+  useGetCartQuery,
+  useUpdateCartItemMutation,
+  useRemoveCartItemMutation,
+  useClearCartMutation,
+} = cartApi;
+
 export default cartApi;

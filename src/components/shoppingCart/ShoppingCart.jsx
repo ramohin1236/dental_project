@@ -1,119 +1,311 @@
-import React, { useState, useMemo } from 'react';
-import CartHeader from './CartHeader';
-import CartItem from './CartItem';
-import OrderSummary from './OrderSummary';
-import BreadCrumb from '../../components/shared/BreadCrumb';
-import { useNavigate } from 'react-router-dom';
-
-
+"use client";
+import BreadCrumb from "@/components/shared/BreadCrumb";
+import CartHeader from "@/components/shoppingCart/CartHeader";
+import CartItem from "@/components/shoppingCart/CartItem";
+import OrderSummary from "@/components/shoppingCart/OrderSummary";
+import {
+  useGetCartQuery,
+  useClearCartMutation,
+  useRemoveCartItemMutation,
+  useUpdateCartItemMutation,
+} from "@/redux/feature/cart/cartApi";
+import { getBaseUrl } from "@/utils/getBaseUrl";
+import { useRouter } from "next/navigation";
+import React, { useState, useMemo, useEffect } from "react";
 
 const ShoppingCart = () => {
-    const [products, setProducts] = useState([
-        {
-            id: 1,
-            name: 'Walden Tesla Air Rotor',
-            price: 300.00,
-            quantity: 1,
-            image: 'https://images.pexels.com/photos/163100/circuit-circuit-board-resistor-computer-163100.jpeg?auto=compress&cs=tinysrgb&w=400',
-            selected: true
-        }
-    ]);
+  const {
+    data: cartData,
+    isFetching,
+    error,
+  } = useGetCartQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+    refetchOnFocus: true,
+  });
+  const [clearCart] = useClearCartMutation();
+  const [removeCartItem] = useRemoveCartItemMutation();
+  const [updateCartItem] = useUpdateCartItemMutation();
 
-    const selectedProducts = useMemo(() =>
-        products.filter(product => product.selected),
-        [products]
-    );
+  // Normalize server items
+  const products = useMemo(() => {
+    if (!cartData?.data?.items) return [];
 
-    const subtotal = useMemo(() =>
-        selectedProducts.reduce((sum, product) => sum + (product.price * product.quantity), 0),
-        [selectedProducts]
-    );
+    return cartData.data.items
+      .map((item) => ({
+        _id: item.product?._id, 
+        cartItemId: item._id, 
+        name: item.product?.name,
+        price: item.product?.price || 0,
+        images: item.product?.images || [],
+        image: item.product?.image,
+        quantity: Math.max(1, Number(item.quantity) || 1),
+      }))
+      .filter((p) => !!p._id);
+  }, [cartData]);
 
-    const shippingFee = 5.00;
-    const total = subtotal + shippingFee;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-    const allSelected = products.length > 0 && products.every(product => product.selected);
+  
+  const [productQuantities, setProductQuantities] = useState({});
 
-    const handleToggleSelect = (id) => {
-        setProducts(products.map(product =>
-            product.id === id ? { ...product, selected: !product.selected } : product
-        ));
-    };
+  useEffect(() => {
+    const initialQuantities = {};
+    products.forEach((product) => {
+      initialQuantities[product._id] = product.quantity;
+    });
+    setProductQuantities(initialQuantities);
+  }, [products]);
 
-    const handleSelectAll = () => {
-        const newSelectedState = !allSelected;
-        setProducts(products.map(product => ({ ...product, selected: newSelectedState })));
-    };
+ 
+  const [selectedMap, setSelectedMap] = useState({});
+  useEffect(() => {
+    const next = {};
+    products.forEach((p) => {
+      next[p._id] = true;
+    });
+    setSelectedMap(next);
+  }, [products]);
 
-    const handleUpdateQuantity = (id, quantity) => {
-        setProducts(products.map(product =>
-            product.id === id ? { ...product, quantity } : product
-        ));
-    };
+  const selectedProducts = products.filter((p) => selectedMap[p._id]);
+  const subtotal = selectedProducts.reduce((sum, p) => {
+    const quantity = productQuantities[p._id] || p.quantity;
+    return sum + p.price * quantity;
+  }, 0);
 
-    const handleDeleteSelected = () => {
-        setProducts(products.filter(product => !product.selected));
-    };
-    const navigate = useNavigate();
-    const handleProceedToCheckout = () => {
-        navigate("/checkout");
-    };
+  const shippingFee = 5.0;
+  const total = subtotal + shippingFee;
 
-    return (
-        <div className="min-h-screen py-10 px-5 md:px-0">
-            <div className="container mx-auto">
-                <div className="container mx-auto flex justify-start items-center">
-                    <BreadCrumb name="Home" title="Cart" />
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                    {/* Cart Items Section */}
-                    <div className="lg:col-span-2">
-                        <div className="bg-[#202020] rounded-lg p-5">
-                            <CartHeader
-                                onSelectAll={handleSelectAll}
-                                onDeleteSelected={handleDeleteSelected}
-                                allSelected={allSelected}
-                            />
+  const allSelected =
+    products.length > 0 &&
+    products.every((product) => selectedMap[product._id]);
 
-                            <div className="mb-5">
-                                <div className="flex items-center justify-between text-gray-400 text-sm font-medium mb-4">
-                                    <span>Product</span>
-                                    <span>QTY</span>
-                                </div>
-                                <div className='border-t border-gray-600 pt-4'></div>
-                            </div>
+ 
+  const handleIncrementQuantity = async (productId) => {
+    const currentQty = productQuantities[productId] || 1;
+    const newQty = currentQty + 1;
 
-                            <div className="space-y-0">
-                                {products.map((product) => (
-                                    <CartItem
-                                        key={product.id}
-                                        id={product.id}
-                                        name={product.name}
-                                        price={product.price}
-                                        quantity={product.quantity}
-                                        image={product.image}
-                                        isSelected={product.selected}
-                                        onToggleSelect={handleToggleSelect}
-                                        onUpdateQuantity={handleUpdateQuantity}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    </div>
+    console.log("🔄 Increment:", productId, currentQty, "→", newQty);
 
-                    {/* Order Summary Section */}
-                    <div className="lg:col-span-1 bg-[#202020]">
-                        <OrderSummary
-                            subtotal={subtotal}
-                            shippingFee={shippingFee}
-                            total={total}
-                            onProceedToCheckout={handleProceedToCheckout}
-                        />
-                    </div>
-                </div>
-            </div>
+    
+    setProductQuantities((prev) => ({
+      ...prev,
+      [productId]: newQty,
+    }));
+
+    try {
+      
+      const result = await updateCartItem({
+        productId: productId, 
+        quantity: newQty,
+      }).unwrap();
+
+      console.log(" Quantity updated successfully:", result);
+    } catch (error) {
+     
+      setProductQuantities((prev) => ({
+        ...prev,
+        [productId]: currentQty,
+      }));
+      console.error(" Failed to update quantity:", error);
+    }
+  };
+
+  const handleDecrementQuantity = async (productId) => {
+    const currentQty = productQuantities[productId] || 1;
+    const newQty = Math.max(1, currentQty - 1);
+
+    console.log("🔄 Decrement:", productId, currentQty, "→", newQty);
+
+    
+    setProductQuantities((prev) => ({
+      ...prev,
+      [productId]: newQty,
+    }));
+
+    try {
+      
+      const result = await updateCartItem({
+        productId: productId, 
+        quantity: newQty,
+      }).unwrap();
+
+      console.log("Quantity updated successfully:", result);
+    } catch (error) {
+      // Revert on error
+      setProductQuantities((prev) => ({
+        ...prev,
+        [productId]: currentQty,
+      }));
+      console.error("Failed to update quantity:", error);
+    }
+  };
+
+  const handleQuantityChange = async (productId, newQuantity) => {
+    const validQuantity = Math.max(1, parseInt(newQuantity) || 1);
+    const currentQty = productQuantities[productId] || 1;
+
+    console.log("🔄 Direct change:", productId, currentQty, "→", validQuantity);
+
+    
+    setProductQuantities((prev) => ({
+      ...prev,
+      [productId]: validQuantity,
+    }));
+
+    try {
+      
+      const result = await updateCartItem({
+        productId: productId, 
+        quantity: validQuantity,
+      }).unwrap();
+
+      console.log("Quantity updated successfully:", result);
+    } catch (error) {
+      // Revert on error
+      setProductQuantities((prev) => ({
+        ...prev,
+        [productId]: currentQty,
+      }));
+      console.error("Failed to update quantity:", error);
+    }
+  };
+
+  const handleToggleSelect = (id) => {
+    setSelectedMap((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleSelectAll = () => {
+    const flag = !allSelected;
+    const next = {};
+    products.forEach((p) => {
+      next[p._id] = flag;
+    });
+    setSelectedMap(next);
+  };
+
+  const handleDeleteItem = async (productId) => {
+    console.log("🗑️ Deleting product:", productId);
+
+    try {
+      const result = await removeCartItem(productId).unwrap();
+      console.log(" Item deleted successfully:", result);
+    } catch (error) {
+      console.error(" Failed to delete item:", error);
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    const selected = products.filter((p) => selectedMap[p._id]);
+    if (selected.length === 0) return;
+
+    if (selected.length === products.length) {
+      clearCart().unwrap().catch(console.error);
+      return;
+    }
+
+    Promise.allSettled(
+      selected.map((p) => removeCartItem(p._id).unwrap())
+    ).catch(console.error);
+  };
+
+  const navigate = useRouter();
+  const handleProceedToCheckout = () => {
+    if (selectedProducts.length === 0) {
+      alert("Please select at least one product to checkout");
+      return;
+    }
+    navigate.push("/checkout");
+  };
+
+  const getProductImage = (product) => {
+    if (product?.images && product.images.length > 0 && product.images[0]) {
+      return `${getBaseUrl()}${product.images[0]}`;
+    }
+    if (product?.image) {
+      return `${getBaseUrl()}${product.image}`;
+    }
+    return "/image/icons/noproduct.png";
+  };
+
+  return (
+    <div className="min-h-screen py-10 px-5 md:px-0">
+      <div className="container mx-auto">
+        <div className="container mx-auto flex justify-start items-center">
+          <BreadCrumb name="Home" title="Cart" />
         </div>
-    );
+
+        <div className="bg-blue-900 p-4 my-4 rounded">
+          <h3 className="text-white font-bold">Debug Info:</h3>
+          <p className="text-white">Products: {products.length}</p>
+          <p className="text-white">Using Product ID for API calls</p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div className="lg:col-span-2">
+            <div className="bg-[#202020] rounded-lg p-5">
+              <CartHeader
+                selectedCount={selectedProducts.length}
+                onSelectAll={handleSelectAll}
+                onDeleteSelected={handleDeleteSelected}
+                allSelected={allSelected}
+              />
+
+              <div className="mb-5">
+                <div className="flex items-center justify-between text-gray-400 text-sm font-medium mb-4">
+                  <span>Product</span>
+                  <span>QTY</span>
+                </div>
+                <div className="border-t border-gray-600 pt-4"></div>
+              </div>
+
+              <div className="space-y-0">
+                {products.length > 0 ? (
+                  products.map((product) => (
+                    <CartItem
+                      key={product._id}
+                      product={product}
+                      id={product._id}
+                      name={product.name}
+                      price={product.price}
+                      quantity={
+                        productQuantities[product._id] || product.quantity
+                      }
+                      image={getProductImage(product)}
+                      isSelected={!!selectedMap[product._id]}
+                      onToggleSelect={() => handleToggleSelect(product._id)}
+                      onIncrement={() => handleIncrementQuantity(product._id)}
+                      onDecrement={() => handleDecrementQuantity(product._id)}
+                      onQuantityChange={(newQty) =>
+                        handleQuantityChange(product._id, newQty)
+                      }
+                      onDeleteItem={() => handleDeleteItem(product._id)}
+                    />
+                  ))
+                ) : (
+                  <div className="text-center py-10 text-gray-400">
+                    Your cart is empty
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Order Summary Section */}
+          <div className="lg:col-span-1 bg-[#202020]">
+            <OrderSummary
+              subtotal={subtotal}
+              shippingFee={shippingFee}
+              total={total}
+              onProceedToCheckout={handleProceedToCheckout}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default ShoppingCart;

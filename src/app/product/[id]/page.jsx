@@ -1,8 +1,8 @@
 "use client"
 import BreadCrumb from "@/components/shared/BreadCrumb";
 import SectionHeading from "@/components/shared/SectionHeading";
-import { addToCart } from "@/redux/feature/cart/cartSlice";
-import { useAddToCartMutation } from "@/redux/feature/cart/cartApi";
+import { addToCart, setItemQuantity, setCartFromServer } from "@/redux/feature/cart/cartSlice";
+import { useAddToCartMutation, useGetCartQuery, useUpdateCartItemMutation } from "@/redux/feature/cart/cartApi";
 import { useFetchProductbyIdQuery } from "@/redux/feature/products/productsApi";
 import { getBaseUrl } from "@/utils/getBaseUrl";
 import { useParams,useRouter } from "next/navigation";
@@ -20,9 +20,11 @@ const ProductDetails = () => {
   const [showModal, setShowModal] = useState(false);
   const dispatch = useDispatch()
   const [addToCartMutation] = useAddToCartMutation();
+  const { data: cartData } = useGetCartQuery();
+  const [updateCartItem] = useUpdateCartItemMutation();
 
   const { data, isLoading, isError } = useFetchProductbyIdQuery(id);
-  const product = data;
+  const product = data?.data;
   console.log(product);
   const user = useSelector((state) => state?.auth?.user);
   const IsLogin = !!user;
@@ -34,14 +36,59 @@ const ProductDetails = () => {
     }
   }, [product]);
 
-  const handleAddToCart = async (product) => {
-    try {
-      await addToCartMutation({ product, quantity }).unwrap();
-    } catch (e) {
-      // ignore server error to keep UI responsive
+  // sync quantity input with server cart when page loads or cart changes
+  useEffect(() => {
+    if (!product) return;
+    const items = cartData?.data?.items || cartData?.items || [];
+    const found = items.find((i) => (i.product?._id || i.productId || i._id) === product._id || i._id === product._id);
+    if (found && typeof found.quantity === 'number') {
+      setQuantity(found.quantity);
+    } else {
+      setQuantity(1);
     }
-    dispatch(addToCart(product));
+  }, [cartData, product]);
+
+  // also hydrate Redux cart from server here to keep global state in sync
+  useEffect(() => {
+    const items = cartData?.data?.items || cartData?.items;
+    if (Array.isArray(items)) {
+      dispatch(setCartFromServer(items));
+    }
+  }, [cartData, dispatch]);
+
+ const handleAddToCart = async (product) => {
+  try {
+    // find current server quantity for this product
+    const items = cartData?.data?.items || cartData?.items || [];
+    const found = items.find((i) => (i.product?._id || i.productId || i._id) === product._id || i._id === product._id);
+    const currentQty = Number(found?.quantity || 0);
+
+    if (currentQty > 0) {
+      // set absolute quantity to current + input using PATCH
+      const nextQty = Math.max(1, currentQty + Number(quantity || 0));
+      await updateCartItem({ productId: product._id, quantity: nextQty }).unwrap();
+      dispatch(setItemQuantity({ id: product._id, quantity: nextQty }));
+      setQuantity(nextQty);
+    } else {
+      // not in cart yet, add new with provided quantity
+      await addToCartMutation({
+        productId: product._id,
+        quantity,
+      }).unwrap();
+
+      dispatch(addToCart({
+        _id: product._id,
+        name: product.name,
+        price: product.price,
+        quantity,
+      }));
+    }
+
+  } catch (e) {
+    console.log("Cart API Error:", e);
   }
+}
+
 
   if (isLoading)
     return (
@@ -57,12 +104,49 @@ const ProductDetails = () => {
       </div>
     );
 
-  // Quantity functions
-  const incrementQuantity = () => setQuantity((prev) => prev + 1);
-  const decrementQuantity = () => setQuantity((prev) => Math.max(1, prev - 1));
-  const handleQuantityChange = (e) => {
+  const incrementQuantity = async () => {
+    const items = cartData?.data?.items || cartData?.items || [];
+    const found = product ? items.find((i) => (i.product?._id || i.productId || i._id) === product._id || i._id === product._id) : null;
+    const next = (quantity || 1) + 1;
+    const prev = quantity;
+    setQuantity(next);
+    if (found) {
+      try {
+        await updateCartItem({ productId: product._id, quantity: next }).unwrap();
+      } catch (e) {
+        setQuantity(prev);
+      }
+    }
+  };
+
+  const decrementQuantity = async () => {
+    const items = cartData?.data?.items || cartData?.items || [];
+    const found = product ? items.find((i) => (i.product?._id || i.productId || i._id) === product._id || i._id === product._id) : null;
+    const next = Math.max(1, (quantity || 1) - 1);
+    const prev = quantity;
+    setQuantity(next);
+    if (found) {
+      try {
+        await updateCartItem({ productId: product._id, quantity: next }).unwrap();
+      } catch (e) {
+        setQuantity(prev);
+      }
+    }
+  };
+
+  const handleQuantityChange = async (e) => {
     const value = Math.max(1, parseInt(e.target.value) || 1);
+    const items = cartData?.data?.items || cartData?.items || [];
+    const found = product ? items.find((i) => (i.product?._id || i.productId || i._id) === product._id || i._id === product._id) : null;
+    const prev = quantity;
     setQuantity(value);
+    if (found) {
+      try {
+        await updateCartItem({ productId: product._id, quantity: value }).unwrap();
+      } catch (e) {
+        setQuantity(prev);
+      }
+    }
   };
 
   return (

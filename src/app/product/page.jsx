@@ -15,7 +15,7 @@ export default function Product() {
   const [currentPage, setCurrentPage] = useState(1);
   const [productPerPage] = useState(10);
 
-  // 🧠 Filter States
+  //  Filter States
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [selectedProcedures, setSelectedProcedures] = useState([]);
@@ -23,7 +23,7 @@ export default function Product() {
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
 
-  // 🧩 Query
+  //  Query
   const { data, isLoading } = useFetchAllProductsQuery({
     category: selectedCategories.join(","),
     brand: selectedBrands.join(","),
@@ -36,11 +36,11 @@ export default function Product() {
   });
 
   const products = data?.data || [];
-  console.log(products)
+  // console.log(products)
   const totalProducts = data?.total || 0;
   const totalPages = Math.ceil(totalProducts / productPerPage);
 
-  // 🗂 Fetch all filter options
+  //  Fetch all filter options
   const { data: categories } = useFetchAllCategoriesQuery({});
   const { data: brands } = useFetchAllBrandsQuery({});
   const { data: procedure } = useFetchAllProcedureQuery({});
@@ -51,7 +51,7 @@ export default function Product() {
   const [showBrand, setShowBrand] = useState(true);
   const [showAvailability, setShowAvailability] = useState(true);
 
-  // 🧮 Handle Checkbox Change (Reusable)
+  // Handle Checkbox Change 
   const handleCheckboxChange = (value, setState) => {
     setState((prev) =>
       prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
@@ -134,7 +134,7 @@ export default function Product() {
                 </div>
               </div>
 
-              {/* 🧩 Category Filter */}
+              {/*  Category Filter */}
               <div className="border-b border-[#DBDBDB] pb-4">
                 <div
                   className="flex items-center justify-between cursor-pointer"

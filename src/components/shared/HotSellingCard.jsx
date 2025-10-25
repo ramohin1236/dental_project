@@ -1,45 +1,81 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useDispatch } from "react-redux";
 import { addToCart } from "@/redux/feature/cart/cartSlice";
+import { useAddToCartMutation } from "@/redux/feature/cart/cartApi"; 
+import Swal from "sweetalert2";
 
-const HotSellingCard = ({ product,image, title, description, id, cardWidth = 288 }) => {
+const HotSellingCard = ({ product, image, title, description, id }) => {
   const router = useRouter();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
+  const [addToCartApi, { isLoading }] = useAddToCartMutation();
 
-  // Set the current card values as local state (defaults)
-  const [cardData, setCardData] = useState({
-    title: title || "Default Title",
-    description: description || "Default Description",
-    image: image || "https://via.placeholder.com/300",
-  });
+  const handleAddToCart = async () => {
+    try {
+      if (!product?._id) {
+        Swal.fire("Error!", "Product information missing", "error");
+        return;
+      }
 
-    const handleAddToCart =(product)=>{
-       dispatch(addToCart(product))
-       console.log(product)
-    } 
+      
+      const res = await addToCartApi({
+        productId: product._id,
+        quantity: 1,
+      }).unwrap();
+
+      
+      if (res?.statusCode === 200) {
+        dispatch(addToCart({
+          _id: product._id,
+          name: product.name,
+          price: product.price,
+          image: product.images?.[0],
+          quantity: 1,
+          selected: true
+        }));
+        
+        Swal.fire("Success!", "Product added to cart", "success");
+      }
+
+    } catch (error) {
+      console.error("Add to cart error:", error);
+      
+      
+      if (error?.status === 401) {
+        Swal.fire("Login Required!", "Please login to add items to cart", "error");
+        router.push("/login");
+      } else {
+        Swal.fire("Error!", error?.data?.message || "Failed to add product to cart", "error");
+      }
+    }
+  };
 
   const handleWishlistClick = () => {
     router.push("/favourite");
   };
 
+  const productImage = image || product?.images?.[0] || "https://via.placeholder.com/300";
+  const productTitle = title || product?.name || "Default Title";
+  const productDescription = description || product?.description || "Default Description";
+  const productId = id || product?._id;
+
   return (
-    <div>
+    <div className="bg-[#1E1E1E] rounded-lg p-4 shadow-lg">
       {/* Image Section */}
       <div className="relative rounded-md overflow-hidden cursor-pointer">
         <img
-          src={cardData.image}
-          alt={cardData.title}
-          className="w-full lg:w-[280px] h-[280px] object-cover"
+          src={productImage}
+          alt={productTitle}
+          className="w-full h-[280px] object-cover"
         />
         {/* Heart Icon */}
-        <div className="absolute z-10 top-2 right-2">
+        <div className="absolute top-2 right-2">
           <img
             src="/favourite.svg"
             alt="heart"
-            className="cursor-pointer hover:scale-110 transition-all duration-300 text-[#136BFB]"
+            className="cursor-pointer hover:scale-110 transition-all duration-300"
             onClick={handleWishlistClick}
           />
         </div>
@@ -47,24 +83,23 @@ const HotSellingCard = ({ product,image, title, description, id, cardWidth = 288
 
       {/* Text and Buttons */}
       <div className="flex flex-col gap-4 mt-4">
-        <p className="text-[#FCFBF8] text-lg line-clamp-1">{cardData.title}</p>
-        <p className="text-[#9F9C96] text-sm line-clamp-2">
-          {cardData.description}
+        <p className="text-white text-lg font-semibold line-clamp-1">{productTitle}</p>
+        <p className="text-gray-400 text-sm line-clamp-2">
+          {productDescription}
         </p>
         <div className="flex justify-between gap-2">
           <Link
-            href={`/product/${id}`}
-            className="px-4 py-2 rounded-md text-[#136BFB] border border-[#136BFB] cursor-pointer whitespace-nowrap"
-            
+            href={`/product/${productId}`}
+            className="px-4 py-2 rounded-md text-[#136BFB] border border-[#136BFB] cursor-pointer whitespace-nowrap hover:bg-[#136BFB] hover:text-white transition-colors"
           >
             View Details
           </Link>
           <button
-          onClick={()=>handleAddToCart(product)}
-            className="bg-[#136BFB] px-4 py-2 rounded-md text-white border border-[#136BFB] cursor-pointer whitespace-nowrap"
-            
+            onClick={handleAddToCart}
+            disabled={isLoading}
+            className="bg-[#136BFB] px-4 py-2 rounded-md text-white border border-[#136BFB] cursor-pointer whitespace-nowrap hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            Add To Cart
+            {isLoading ? "Adding..." : "Add To Cart"}
           </button>
         </div>
       </div>

@@ -3,64 +3,163 @@ import BreadCrumb from '@/components/shared/BreadCrumb';
 import CartHeader from '@/components/shoppingCart/CartHeader';
 import CartItem from '@/components/shoppingCart/CartItem';
 import OrderSummary from '@/components/shoppingCart/OrderSummary';
-import { updateQuantity } from '@/redux/feature/cart/cartSlice';
+import { useGetCartQuery, useClearCartMutation, useRemoveCartItemMutation, useUpdateCartItemMutation } from '@/redux/feature/cart/cartApi';
 import { getBaseUrl } from '@/utils/getBaseUrl';
 import { useRouter } from 'next/navigation';
 import React, { useState, useMemo, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 
 const ShoppingCart = () => {
-    const cart = useSelector((state) => state?.cart || {});
-    const products = cart.products || [];
-    const dispatch = useDispatch();
+    const { data: cartData, isFetching, error } = useGetCartQuery(undefined, {
+        refetchOnMountOrArgChange: true,
+        refetchOnFocus: true,
+    });
+    const [clearCart] = useClearCartMutation();
+    const [removeCartItem] = useRemoveCartItemMutation();
+    const [updateCartItem] = useUpdateCartItemMutation();
+
+    // Normalize server items to a consistent shape expected by CartItem
+    const products = useMemo(() => {
+        if (!cartData?.data?.items) return [];
+        
+        const items = cartData.data.items;
+        if (!Array.isArray(items)) return [];
+        
+        return items
+            .map((item) => ({
+                _id: item.product?._id || item.productId, // Product ID
+                cartItemId: item._id, // Cart item unique ID
+                name: item.product?.name,
+                price: item.product?.price || 0,
+                images: item.product?.images || [],
+                image: item.product?.image,
+                quantity: Math.max(1, Number(item.quantity) || 1),
+                availability: item.product?.availability || 'In Stock'
+            }))
+            .filter((p) => !!p._id);
+    }, [cartData]);
 
     const [mounted, setMounted] = useState(false);
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    const selectedProducts = products.filter(p => p.selected);
-    const subtotal = cart.selectedSubtotal ?? selectedProducts.reduce((sum, p) => sum + (p.price * p.quantity), 0);
+    // Local selection state per cart line (keyed by cartItemId)
+    const [selectedMap, setSelectedMap] = useState({});
+    useEffect(() => {
+        const next = {};
+        products.forEach(p => { next[p.cartItemId] = true; });
+        setSelectedMap(next);
+    }, [products]);
+
+    // Optimistic quantities per cart line (keyed by cartItemId)
+    const [quantitiesMap, setQuantitiesMap] = useState({});
+    useEffect(() => {
+        const next = {};
+        products.forEach(p => { next[p.cartItemId] = p.quantity; });
+        setQuantitiesMap(next);
+    }, [products]);
+
+    const selectedProducts = products.filter(p => selectedMap[p.cartItemId]).map(p => ({
+        ...p,
+        quantity: quantitiesMap[p.cartItemId] ?? p.quantity,
+    }));
+    const subtotal = selectedProducts.reduce((sum, p) => sum + (p.price * p.quantity), 0);
 
     const shippingFee = 5.00;
     const total = subtotal + shippingFee;
 
-    const allSelected = products.length > 0 && products.every(product => product.selected);
-    
-    console.log("Cart Products:", products);
+    const allSelected = products.length > 0 && products.every(product => selectedMap[product.cartItemId]);
 
-    const handleToggleSelect = (id) => {
-        dispatch({ type: 'cart/toggleSelect', payload: { id } });
+    const handleToggleSelect = (cartItemId) => {
+        setSelectedMap((prev) => ({ ...prev, [cartItemId]: !prev[cartItemId] }));
     };
 
     const handleSelectAll = () => {
-        dispatch({ type: 'cart/selectAll', payload: { selected: !allSelected } });
+        const flag = !allSelected;
+        const next = {};
+        products.forEach(p => { next[p.cartItemId] = flag; });
+        setSelectedMap(next);
     };
 
-    const handleUpdateQuantity = (id, type) => {
-        const payload = {type, id}
-        dispatch(updateQuantity(payload))
+    // Handle quantity updates optimistically, then sync to server via PATCH
+    const handleUpdateQuantity = async (cartItemId, type) => {
+        const product = products.find(p => p.cartItemId === cartItemId);
+        if (!product) return;
+
+        const current = quantitiesMap[cartItemId] ?? product.quantity ?? 1;
+        const next = type === 'increment' ? current + 1 : Math.max(1, current - 1);
+
+        // Optimistic update
+        setQuantitiesMap((prev) => ({ ...prev, [cartItemId]: next }));
+        
+        try {
+            await updateCartItem({ 
+                productId: product._id, 
+                quantity: next 
+            }).unwrap();
+        } catch (e) {
+            // revert on failure
+            setQuantitiesMap((prev) => ({ ...prev, [cartItemId]: current }));
+            console.error('Failed to update quantity', e);
+        }
+    };
+
+    const handleDirectQuantityChange = async (cartItemId, newQuantity) => {
+        const product = products.find(p => p.cartItemId === cartItemId);
+        if (!product) return;
+
+        const current = quantitiesMap[cartItemId] ?? product.quantity ?? 1;
+        const parsed = parseInt(newQuantity, 10);
+        const next = Math.max(1, isNaN(parsed) ? 1 : parsed);
+
+        // Optimistic update
+        setQuantitiesMap((prev) => ({ ...prev, [cartItemId]: next }));
+
+        try {
+            await updateCartItem({
+                productId: product._id,
+                quantity: next,
+            }).unwrap();
+        } catch (e) {
+            // revert on failure
+            setQuantitiesMap((prev) => ({ ...prev, [cartItemId]: current }));
+            console.error('Failed to set quantity', e);
+        }
     };
 
     const handleDeleteSelected = () => {
-        dispatch({ type: 'cart/removeSelected' });
+        const selected = products.filter(p => selectedMap[p.cartItemId]);
+        if (selected.length === 0) return;
+
+        if (selected.length === products.length) {
+            // Clear all in DB
+            clearCart().unwrap().catch(console.error);
+            return;
+        }
+        
+        Promise.allSettled(
+            selected.map(p => removeCartItem(p._id).unwrap())
+        ).catch(console.error);
     };
 
-    const router = useRouter();
-    
+    const navigate = useRouter();
     const handleProceedToCheckout = () => {
-        router.push("/checkout");
+        if (selectedProducts.length === 0) {
+            alert('Please select at least one product to checkout');
+            return;
+        }
+        navigate.push('/checkout');
     };
 
     // ✅ Safe image URL generator
     const getProductImage = (product) => {
-        // Check if images array exists and has at least one image
         if (product?.images && product.images.length > 0 && product.images[0]) {
             return `${getBaseUrl()}${product.images[0]}`;
         }
-        
-        // Fallback image jodi kono image na thake
-        return "/default-product-image.jpg"; // Tomar project e ekta default image path dao
+        if (product?.image) {
+            return `${getBaseUrl()}${product.image}`; 
+        }
+        return '/image/icons/noproduct.png';
     };
 
     return (
@@ -74,6 +173,7 @@ const ShoppingCart = () => {
                     <div className="lg:col-span-2">
                         <div className="bg-[#202020] rounded-lg p-5">
                             <CartHeader
+                                selectedCount={selectedProducts.length}
                                 onSelectAll={handleSelectAll}
                                 onDeleteSelected={handleDeleteSelected}
                                 allSelected={allSelected}
@@ -88,28 +188,29 @@ const ShoppingCart = () => {
                             </div>
 
                             <div className="space-y-0">
-                                {!mounted ? (
-                                    // Render the same placeholder on server and initial client to avoid hydration mismatch
-                                    <div className="text-center py-10 text-gray-400">Your cart is empty</div>
+                                {!mounted || isFetching ? (
+                                    <div className="text-center py-10 text-gray-400">Loading your cart...</div>
+                                ) : error ? (
+                                    <div className="text-center py-10 text-red-500">Failed to load cart</div>
+                                ) : products.length > 0 ? (
+                                    products.map((product) => (
+                                        <CartItem
+                                            key={product.cartItemId}
+                                            product={product}
+                                            id={product.cartItemId}
+                                            name={product.name}
+                                            price={product.price}
+                                            quantity={quantitiesMap[product.cartItemId] ?? product.quantity}
+                                            image={getProductImage(product)}
+                                            isSelected={!!selectedMap[product.cartItemId]}
+                                            onToggleSelect={() => handleToggleSelect(product.cartItemId)}
+                                            onIncrement={() => handleUpdateQuantity(product.cartItemId, 'increment')}
+                                            onDecrement={() => handleUpdateQuantity(product.cartItemId, 'decrement')}
+                                            onQuantityChange={(newQty) => handleDirectQuantityChange(product.cartItemId, newQty)}
+                                        />
+                                    ))
                                 ) : (
-                                    products.length > 0 ? (
-                                        products.map((product) => (
-                                            <CartItem
-                                                key={product._id}
-                                                product={product}
-                                                id={product._id}
-                                                name={product?.name || "Unnamed Product"}
-                                                price={product?.price || 0}
-                                                quantity={product?.quantity || 1}
-                                                image={getProductImage(product)}
-                                                isSelected={product.selected}
-                                                onToggleSelect={handleToggleSelect}
-                                                onUpdateQuantity={handleUpdateQuantity}
-                                            />
-                                        ))
-                                    ) : (
-                                        <div className="text-center py-10 text-gray-400">Your cart is empty</div>
-                                    )
+                                    <div className="text-center py-10 text-gray-400">Your cart is empty</div>
                                 )}
                             </div>
                         </div>

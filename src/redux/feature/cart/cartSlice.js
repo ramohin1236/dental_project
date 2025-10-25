@@ -1,110 +1,114 @@
-import { createSlice } from '@reduxjs/toolkit'
-import Swal from 'sweetalert2'
+import { createSlice } from "@reduxjs/toolkit";
+import Swal from "sweetalert2";
 
-const initialState ={
-    products: [],
-    selectedItems: 0,
-    totalPrice: 0,
-    selectedSubtotal: 0
-}
+const initialState = JSON.parse(localStorage.getItem("cart")) || {
+  products: [],
+  selectedItems: 0,
+  totalPrice: 0,
+  selectedSubtotal: 0,
+};
+
+const saveCart = (state) => {
+  localStorage.setItem("cart", JSON.stringify(state));
+};
 
 const calculateCartTotals = (products) => {
-    const selectedItems = products.reduce((total, product) => total + (product.quantity || 0), 0);
-    const totalPrice = products.reduce((total, product) => total + (product.quantity || 0) * (product.price || 0) , 0)
-    const selectedSubtotal = products
-        .filter(product => product.selected)
-        .reduce((total, product) => total + (product.quantity || 0) * (product.price || 0), 0);
-
-    return {selectedItems, totalPrice, selectedSubtotal};
-}
+  const selectedItems = products.reduce((total, product) => total + (product.quantity || 0), 0);
+  const totalPrice = products.reduce((total, product) => total + (product.quantity || 0) * (product.price || 0), 0);
+  const selectedSubtotal = products
+    .filter((product) => product.selected)
+    .reduce((total, product) => total + (product.quantity || 0) * (product.price || 0), 0);
+  return { selectedItems, totalPrice, selectedSubtotal };
+};
 
 export const cartSlice = createSlice({
-    name: 'cart',
-    initialState,
-    reducers: {
-        addToCart: (state, action) => {
-            const isExist = state.products.find(product => product._id === action.payload._id);
-            if(!isExist) {
-                // default a new product to selected = true so it contributes to subtotal
-                state.products.push({...action.payload, quantity: 1, selected: true})
-                alert("Product added successfully!")
-            } else {
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Product already Added to Cart',
-                    icon: 'error',
-                    confirmButtonText: "It's Ok"
-                  })
-            }
-            const totals = calculateCartTotals(state.products);
-            state.selectedItems = totals.selectedItems;
-            state.totalPrice = totals.totalPrice;
-            state.selectedSubtotal = totals.selectedSubtotal;
-        },
-        updateQuantity: (state, action) => {
-            const product = state.products.find((item) => item._id === action.payload.id);
-        
-            if(product) {
-                // Accept both correct and legacy misspelled action types for safety
-                if(action.payload.type === "increment" || action.payload.type === "increament") {
-                    product.quantity += 1;
-                } else if(action.payload.type === "decrement" && product.quantity > 1) {
-                    product.quantity -= 1;
-                }
-            }
-            const totals = calculateCartTotals(state.products);
-            state.selectedItems = totals.selectedItems;
-            state.totalPrice = totals.totalPrice;
-            state.selectedSubtotal = totals.selectedSubtotal;
-        },
-        removeFromCart: (state, action) => {
-            state.products = state.products.filter(product => product._id !== action.payload.id)
-            const totals = calculateCartTotals(state.products);
-            state.selectedItems = totals.selectedItems;
-            state.totalPrice = totals.totalPrice;
-            state.selectedSubtotal = totals.selectedSubtotal;
-        },
-        // Toggle selected flag for a product (used for selecting items to checkout)
-        toggleSelect: (state, action) => {
-            const product = state.products.find(p => p._id === action.payload.id);
-            if (product) product.selected = !product.selected;
-            const totals = calculateCartTotals(state.products);
-            state.selectedItems = totals.selectedItems;
-            state.totalPrice = totals.totalPrice;
-            state.selectedSubtotal = totals.selectedSubtotal;
-        },
-        // Set all products as selected/unselected
-        selectAll: (state, action) => {
-            const newState = !!action.payload?.selected;
-            state.products = state.products.map(p => ({ ...p, selected: newState }));
-            const totals = calculateCartTotals(state.products);
-            state.selectedItems = totals.selectedItems;
-            state.totalPrice = totals.totalPrice;
-            state.selectedSubtotal = totals.selectedSubtotal;
-        },
-        // Remove all selected products
-        removeSelected: (state) => {
-            state.products = state.products.filter(p => !p.selected);
-            const totals = calculateCartTotals(state.products);
-            state.selectedItems = totals.selectedItems;
-            state.totalPrice = totals.totalPrice;
-            state.selectedSubtotal = totals.selectedSubtotal;
-        },
-        // Replace cart slice from persisted state (used on store hydration)
-        replaceStateFromPersist: (state, action) => {
-            // action.payload should be the saved cart slice
-            const payload = action.payload || {};
-            state.products = payload.products || state.products;
-            state.selectedItems = payload.selectedItems ?? state.selectedItems;
-            state.totalPrice = payload.totalPrice ?? state.totalPrice;
-            state.selectedSubtotal = payload.selectedSubtotal ?? state.selectedSubtotal;
-        },
-        clearCart: (state) => {
-            Object.assign(state, initialState)
+  name: "cart",
+  initialState,
+  reducers: {
+    addToCart: (state, action) => {
+      const isExist = state.products.find((product) => product._id === action.payload._id);
+      if (!isExist) {
+        state.products.push({ ...action.payload, quantity: action.payload.quantity || 1, selected: true });
+        Swal.fire("Added!", "Product added to cart", "success");
+      } else {
+        const addQty = action.payload.quantity || 1;
+        isExist.quantity = (isExist.quantity || 0) + addQty;
+        Swal.fire("Updated!", "Product quantity updated in cart", "success");
+      }
+      const totals = calculateCartTotals(state.products);
+      Object.assign(state, totals);
+      saveCart(state);
+    },
 
-        }
-    }
-})
+    updateQuantity: (state, action) => {
+      const product = state.products.find((item) => item._id === action.payload.id);
+      if (product) {
+        if (action.payload.type === "increment") product.quantity += 1;
+        else if (action.payload.type === "decrement" && product.quantity > 1) product.quantity -= 1;
+      }
+      Object.assign(state, calculateCartTotals(state.products));
+      saveCart(state);
+    },
 
-export const {addToCart, updateQuantity, removeFromCart, clearCart, toggleSelect, selectAll, removeSelected} = cartSlice.actions;
+    removeFromCart: (state, action) => {
+      state.products = state.products.filter((product) => product._id !== action.payload.id);
+      Object.assign(state, calculateCartTotals(state.products));
+      saveCart(state);
+    },
+
+    toggleSelect: (state, action) => {
+      const product = state.products.find((item) => item._id === action.payload.id);
+      if (product) {
+        product.selected = !product.selected;
+      }
+      Object.assign(state, calculateCartTotals(state.products));
+      saveCart(state);
+    },
+
+    selectAll: (state, action) => {
+      const flag = !!action.payload?.selected;
+      state.products = state.products.map((p) => ({ ...p, selected: flag }));
+      Object.assign(state, calculateCartTotals(state.products));
+      saveCart(state);
+    },
+
+    removeSelected: (state) => {
+      state.products = state.products.filter((p) => !p.selected);
+      Object.assign(state, calculateCartTotals(state.products));
+      saveCart(state);
+    },
+
+    setItemQuantity: (state, action) => {
+      const { id, quantity } = action.payload || {};
+      const product = state.products.find((item) => item._id === id);
+      if (product) {
+        product.quantity = Math.max(1, Number(quantity) || 1);
+      }
+      Object.assign(state, calculateCartTotals(state.products));
+      saveCart(state);
+    },
+
+    setCartFromServer: (state, action) => {
+      const items = Array.isArray(action.payload) ? action.payload : [];
+    
+      state.products = items.map((it) => ({
+        _id: it._id || it.productId || it.product?._id,
+        name: it.name || it.product?.name,
+        price: it.price ?? it.product?.price ?? 0,
+        image: it.image || it.product?.image,
+        quantity: Math.max(1, Number(it.quantity) || 1),
+        selected: typeof it.selected === 'boolean' ? it.selected : true,
+      })).filter(p => !!p._id);
+      Object.assign(state, calculateCartTotals(state.products));
+      saveCart(state);
+    },
+
+    clearCartLocal: (state) => {
+      Object.assign(state, initialState);
+      saveCart(state);
+    },
+  },
+});
+
+export const { addToCart, updateQuantity, removeFromCart, clearCartLocal, toggleSelect, selectAll, removeSelected, setItemQuantity, setCartFromServer } = cartSlice.actions;
 export default cartSlice.reducer;
