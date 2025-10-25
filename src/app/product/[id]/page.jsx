@@ -2,7 +2,7 @@
 import BreadCrumb from "@/components/shared/BreadCrumb";
 import SectionHeading from "@/components/shared/SectionHeading";
 import { addToCart, setItemQuantity, setCartFromServer } from "@/redux/feature/cart/cartSlice";
-import { useAddToCartMutation, useGetCartQuery, useUpdateCartItemMutation } from "@/redux/feature/cart/cartApi";
+import { useAddToCartMutation, useGetCartQuery, useUpdateCartItemMutation, useRemoveCartItemMutation } from "@/redux/feature/cart/cartApi";
 import { useFetchProductbyIdQuery } from "@/redux/feature/products/productsApi";
 import { getBaseUrl } from "@/utils/getBaseUrl";
 import { useParams,useRouter } from "next/navigation";
@@ -20,14 +20,20 @@ const ProductDetails = () => {
   const [showModal, setShowModal] = useState(false);
   const dispatch = useDispatch()
   const [addToCartMutation] = useAddToCartMutation();
-  const { data: cartData } = useGetCartQuery();
+  const { data: cartData, refetch } = useGetCartQuery(undefined, { refetchOnMountOrArgChange: true, refetchOnFocus: true });
   const [updateCartItem] = useUpdateCartItemMutation();
+  const [removeCartItem] = useRemoveCartItemMutation();
 
   const { data, isLoading, isError } = useFetchProductbyIdQuery(id);
   const product = data?.data;
   console.log(product);
   const user = useSelector((state) => state?.auth?.user);
   const IsLogin = !!user;
+  const isInCart = (() => {
+    const items = cartData?.data?.items || cartData?.items || [];
+    if (!product) return false;
+    return !!items.find((i) => (i.product?._id || i.productId || i._id) === product._id || i._id === product._id);
+  })();
 
   // image select
   useEffect(() => {
@@ -118,6 +124,8 @@ const ProductDetails = () => {
       }
     }
   };
+
+ 
 
   const decrementQuantity = async () => {
     const items = cartData?.data?.items || cartData?.items || [];
@@ -284,6 +292,7 @@ const ProductDetails = () => {
               >
                 Add To Cart
               </button>
+             
             </div>
           </div>
         </div>

@@ -4,12 +4,15 @@ import CartHeader from '@/components/shoppingCart/CartHeader';
 import CartItem from '@/components/shoppingCart/CartItem';
 import OrderSummary from '@/components/shoppingCart/OrderSummary';
 import { useGetCartQuery, useClearCartMutation, useRemoveCartItemMutation, useUpdateCartItemMutation } from '@/redux/feature/cart/cartApi';
+import { setCartFromServer } from '@/redux/feature/cart/cartSlice';
 import { getBaseUrl } from '@/utils/getBaseUrl';
 import { useRouter } from 'next/navigation';
 import React, { useState, useMemo, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 
 const ShoppingCart = () => {
-    const { data: cartData, isFetching, error } = useGetCartQuery(undefined, {
+    const dispatch = useDispatch();
+    const { data: cartData, isFetching, error, refetch } = useGetCartQuery(undefined, {
         refetchOnMountOrArgChange: true,
         refetchOnFocus: true,
     });
@@ -127,19 +130,53 @@ const ShoppingCart = () => {
         }
     };
 
-    const handleDeleteSelected = () => {
+    const handleDeleteSelected = async () => {
         const selected = products.filter(p => selectedMap[p.cartItemId]);
         if (selected.length === 0) return;
 
         if (selected.length === products.length) {
-            // Clear all in DB
-            clearCart().unwrap().catch(console.error);
+            try {
+                await clearCart().unwrap();
+                const res = await refetch();
+                const items = res?.data?.data?.items || res?.data?.items;
+                if (Array.isArray(items)) {
+                    dispatch(setCartFromServer(items));
+                }
+            } catch (e) {
+                console.error(e);
+            }
             return;
         }
         
-        Promise.allSettled(
-            selected.map(p => removeCartItem(p._id).unwrap())
-        ).catch(console.error);
+        try {
+            await Promise.allSettled(
+                selected.map(p => removeCartItem(p._id).unwrap())
+            );
+            const res = await refetch();
+            const items = res?.data?.data?.items || res?.data?.items;
+            if (Array.isArray(items)) {
+                dispatch(setCartFromServer(items));
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleDeleteItem = async (cartItemId) => {
+        const product = products.find(p => p.cartItemId === cartItemId);
+        if (!product) return;
+        try {
+            await removeCartItem(product._id).unwrap();
+            setQuantitiesMap(prev => { const next = { ...prev }; delete next[cartItemId]; return next; });
+            setSelectedMap(prev => { const next = { ...prev }; delete next[cartItemId]; return next; });
+            const res = await refetch();
+            const items = res?.data?.data?.items || res?.data?.items;
+            if (Array.isArray(items)) {
+                dispatch(setCartFromServer(items));
+            }
+        } catch (e) {
+            console.error('Failed to delete item', e);
+        }
     };
 
     const navigate = useRouter();
@@ -207,6 +244,7 @@ const ShoppingCart = () => {
                                             onIncrement={() => handleUpdateQuantity(product.cartItemId, 'increment')}
                                             onDecrement={() => handleUpdateQuantity(product.cartItemId, 'decrement')}
                                             onQuantityChange={(newQty) => handleDirectQuantityChange(product.cartItemId, newQty)}
+                                            onDeleteItem={() => handleDeleteItem(product.cartItemId)}
                                         />
                                     ))
                                 ) : (
