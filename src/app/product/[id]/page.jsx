@@ -63,6 +63,7 @@ const ProductDetails = () => {
   }, [cartData, dispatch]);
 
  const handleAddToCart = async (product) => {
+  if (!IsLogin) { navigate.push('/sign_in'); return; }
   try {
     // find current server quantity for this product
     const items = cartData?.data?.items || cartData?.items || [];
@@ -243,7 +244,7 @@ const ProductDetails = () => {
               ) : (
                 <span
                   className="text-[#136BFB] font-medium cursor-pointer hover:underline"
-                  onClick={() => navigate("/login")}
+                  onClick={() => navigate("/sign_in")}
                 >
                   Log In or Sign Up to view price
                 </span>

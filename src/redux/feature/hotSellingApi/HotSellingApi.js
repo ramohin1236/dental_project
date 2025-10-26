@@ -11,10 +11,10 @@ const hotSellingApi = createApi({
     fetchAllHotSelling: builder.query({
       query: () => "/",
       transformResponse: (response) => {
-        // যদি API সরাসরি array দেয়, তখন এটাকেই return করবো
+       
         if (Array.isArray(response)) return response;
 
-        // যদি object হয় এবং data key থাকে, তখন return response.data
+       
         return response?.data || [];
       },
     }),

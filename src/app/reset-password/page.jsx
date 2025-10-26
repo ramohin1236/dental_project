@@ -214,7 +214,7 @@ export default function ResetPassword() {
       {/* Right Column - Illustration */}
       <div className="hidden md:flex md:w-1/2 bg-[#162236] items-center justify-center relative">
         <div className="absolute top-4 right-4">
-          <Link href="/login" className="text-white hover:bg-blue-700 p-2 rounded-full inline-block">
+          <Link href="/sign_in" className="text-white hover:bg-blue-700 p-2 rounded-full inline-block">
             <IoClose size={24} />
           </Link>
         </div>

@@ -8,10 +8,12 @@ import { setCartFromServer } from '@/redux/feature/cart/cartSlice';
 import { getBaseUrl } from '@/utils/getBaseUrl';
 import { useRouter } from 'next/navigation';
 import React, { useState, useMemo, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const ShoppingCart = () => {
     const dispatch = useDispatch();
+    const navigate = useRouter();
+    const user = useSelector((state) => state?.auth?.user);
     const { data: cartData, isFetching, error, refetch } = useGetCartQuery(undefined, {
         refetchOnMountOrArgChange: true,
         refetchOnFocus: true,
@@ -45,6 +47,12 @@ const ShoppingCart = () => {
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    useEffect(() => {
+        if (mounted && !user) {
+            navigate.push('/sign_in');
+        }
+    }, [mounted, user, navigate]);
 
     // Local selection state per cart line (keyed by cartItemId)
     const [selectedMap, setSelectedMap] = useState({});
@@ -191,7 +199,6 @@ const handleDirectQuantityChange = async (cartItemId, newQuantity) => {
         }
     };
 
-    const navigate = useRouter();
     const handleProceedToCheckout = () => {
         if (selectedProducts.length === 0) {
             alert('Please select at least one product to checkout');
@@ -210,6 +217,8 @@ const handleDirectQuantityChange = async (cartItemId, newQuantity) => {
         }
         return '/image/icons/noproduct.png';
     };
+
+    if (mounted && !user) return null;
 
     return (
         <div className="min-h-screen py-10 px-5 md:px-0">

@@ -12,6 +12,7 @@ import {
 import { getBaseUrl } from "@/utils/getBaseUrl";
 import { useRouter } from "next/navigation";
 import React, { useState, useMemo, useEffect } from "react";
+import { useSelector } from "react-redux";
 
 const ShoppingCart = () => {
   const {
@@ -25,6 +26,7 @@ const ShoppingCart = () => {
   const [clearCart] = useClearCartMutation();
   const [removeCartItem] = useRemoveCartItemMutation();
   const [updateCartItem] = useUpdateCartItemMutation();
+  const user = useSelector((state) => state?.auth?.user);
 
   // Normalize server items
   const products = useMemo(() => {
@@ -213,11 +215,15 @@ const ShoppingCart = () => {
 
   const navigate = useRouter();
   const handleProceedToCheckout = () => {
-    if (selectedProducts.length === 0) {
-      alert("Please select at least one product to checkout");
+    if (!user) {
+      navigate.push('/sign_in');
       return;
     }
-    navigate.push("/checkout");
+    if (selectedProducts.length === 0) {
+      alert('Please select at least one product to checkout');
+      return;
+    }
+    navigate.push('/checkout');
   };
 
   const getProductImage = (product) => {

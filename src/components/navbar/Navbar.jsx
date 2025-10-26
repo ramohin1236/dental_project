@@ -8,7 +8,10 @@ import { FaRegUser, FaTimes, FaBars } from "react-icons/fa";
 import { FiUserPlus } from "react-icons/fi";
 import { RiShoppingCart2Line } from "react-icons/ri";
 import { VscSettings } from "react-icons/vsc";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useLogoutMutation } from "@/redux/feature/auth/authApi";
+import { logout as authLogout } from "@/redux/feature/auth/authSlice";
+import { clearCartLocal } from "@/redux/feature/cart/cartSlice";
 
 export default function Navbar() {
   const products = useSelector((state) => state.cart);
@@ -20,6 +23,8 @@ export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useRouter();
+  const dispatch = useDispatch();
+  const [logoutApi, { isLoading: isLoggingOut }] = useLogoutMutation();
 
   useEffect(() => {
     const handleResize = () => {
@@ -90,6 +95,15 @@ export default function Navbar() {
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logoutApi().unwrap();
+    } catch (e) {}
+    dispatch(authLogout());
+    dispatch(clearCartLocal());
+    navigate.push("/sign_in");
   };
 
   return (
@@ -239,16 +253,13 @@ export default function Navbar() {
                     >
                       Support
                     </Link>
-                    <Link
-                      href="/signup"
+                    <button
                       className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                      onClick={() => {
-                        // navigate("/signup");
-                        // setIsDropdownOpen(false);
-                      }}
+                      onClick={handleLogout}
+                      disabled={isLoggingOut}
                     >
-                      Logout
-                    </Link>
+                      {isLoggingOut ? "Logging out..." : "Logout"}
+                    </button>
                   </div>
                 )}
               </div>
@@ -366,7 +377,7 @@ export default function Navbar() {
               <div className="flex flex-col space-y-4">
                 <button
                   onClick={() => {
-                    navigate("/login");
+                    navigate("/sign_in");
                     toggleMenu();
                   }}
                   className="cursor-pointer w-full flex items-center justify-center space-x-2 px-4 py-3 border border-[#136BFB] text-[#136BFB] rounded-lg"

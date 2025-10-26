@@ -2,7 +2,8 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+
 import { addToCart } from "@/redux/feature/cart/cartSlice";
 import { useAddToCartMutation } from "@/redux/feature/cart/cartApi"; 
 import Swal from "sweetalert2";
@@ -10,10 +11,15 @@ import Swal from "sweetalert2";
 const HotSellingCard = ({ product, image, title, description, id }) => {
   const router = useRouter();
   const dispatch = useDispatch();
+  const user = useSelector((state) => state?.auth?.user);
   const [addToCartApi, { isLoading }] = useAddToCartMutation();
 
   const handleAddToCart = async () => {
     try {
+      if (!user) {
+        router.push("/sign_in");
+        return;
+      }
       if (!product?._id) {
         Swal.fire("Error!", "Product information missing", "error");
         return;
@@ -45,7 +51,7 @@ const HotSellingCard = ({ product, image, title, description, id }) => {
       
       if (error?.status === 401) {
         Swal.fire("Login Required!", "Please login to add items to cart", "error");
-        router.push("/login");
+        router.push("/sign_in");
       } else {
         Swal.fire("Error!", error?.data?.message || "Failed to add product to cart", "error");
       }

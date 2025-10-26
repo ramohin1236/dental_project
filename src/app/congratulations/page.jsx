@@ -17,7 +17,7 @@ export default function Congratulations() {
             regularly to avoid this happening.
           </p>
 
-          <Link href="/login">
+          <Link href="/sign_in">
             <button
               type="submit"
               className="w-full bg-[#136BFB] text-white text-lg font-bold py-3 px-4 rounded-lg transition mt-5"

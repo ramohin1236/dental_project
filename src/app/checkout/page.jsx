@@ -214,7 +214,7 @@ const getProductImage = (product) => {
                                                 </p>
                                             </div>
                                         </div>
-                                        <div className="flex space-x-2 ml-3">
+                                        {/* <div className="flex space-x-2 ml-3">
                                          
                                             <button
                                                 onClick={() => {
@@ -227,7 +227,7 @@ const getProductImage = (product) => {
                                             >
                                                 <RiDeleteBinLine className="w-4 h-4" />
                                             </button>
-                                        </div>
+                                        </div> */}
                                     </div>
                                 </div>
                             ))}

@@ -12,7 +12,6 @@ const productsApi = createApi({
     fetchAllProducts: builder.query({
       query: (params = {}) => {
         const queryParams = new URLSearchParams();
-        // Support multiple values for category, brand, procedureType
         if (params.category) {
           if (Array.isArray(params.category)) {
             params.category.forEach((cat) => queryParams.append("category", cat));

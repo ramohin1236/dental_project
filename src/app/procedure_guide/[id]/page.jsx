@@ -1,37 +1,44 @@
 "use client"
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaCheck } from "react-icons/fa";
 import { PiShoppingCartBold } from "react-icons/pi";
 import { useParams } from "next/navigation";
 import { useFetchProcedureByIdQuery } from "@/redux/feature/procedure/procedure";
+import { useAddToCartMutation } from "@/redux/feature/cart/cartApi"; // Add to cart API
+import { addToCart } from "@/redux/feature/cart/cartSlice"; // Redux action
 import BreadCrumb from "@/components/shared/BreadCrumb";
 import { getBaseUrl } from "@/utils/getBaseUrl";
 import ProductCard from "@/components/procedure/ProductCard";
-
+import { useDispatch, useSelector } from "react-redux";
+import Swal from "sweetalert2";
+import { useFetchAllProductsQuery } from "@/redux/feature/products/productsApi";
 
 export default function ProcedureDetails() {
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [selectAll, setSelectAll] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
   
-  const {id} = useParams()
-  const {data: {data: procedureDetails}={}} =useFetchProcedureByIdQuery(id)
+  const { id } = useParams();
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state?.auth?.user);
 
-  const products = [
-    { id: "1", name: "Walden Tesla Air Rotor", image: "/image.png" },
-    { id: "2", name: "Walden Tesla Air Rotor", image: "/image.png" },
-    { id: "3", name: "Walden Tesla Air Rotor", image: "/image.png" },
-    { id: "4", name: "Walden Tesla Air Rotor", image: "/image.png" },
-    { id: "5", name: "Walden Tesla Air Rotor", image: "/image.png" },
-    { id: "6", name: "Walden Tesla Air Rotor", image: "/image.png" },
-    { id: "7", name: "Walden Tesla Air Rotor", image: "/image.png" },
-    { id: "8", name: "Walden Tesla Air Rotor", image: "/image.png" },
-  ];
+  // Procedure details fetch
+  const { data: { data: procedureDetails } = {} } = useFetchProcedureByIdQuery(id);
+  
+  // Products fetch by procedure ID
+  const { data: productsData, isLoading: productsLoading } = useFetchAllProductsQuery(id);
+  
+  // Add to cart mutation
+  const [addToCartApi] = useAddToCartMutation();
+
+  // Products data from API
+  const products = productsData?.data || productsData || [];
 
   const handleSelectAll = () => {
     if (selectAll) {
       setSelectedItems(new Set());
     } else {
-      setSelectedItems(new Set(products.map((p) => p.id)));
+      setSelectedItems(new Set(products.map((p) => p._id)));
     }
     setSelectAll(!selectAll);
   };
@@ -47,13 +54,86 @@ export default function ProcedureDetails() {
     setSelectAll(newSelected.size === products.length);
   };
 
+  // Add to cart function
+  const handleAddToCart = async () => {
+    if (!user) {
+      Swal.fire("Login Required!", "Please login to add items to cart", "error");
+      window.location.href = "/sign_in";
+      return;
+    }
+    if (selectedItems.size === 0) {
+      Swal.fire("Error!", "Please select at least one product", "error");
+      return;
+    }
+
+    setIsAddingToCart(true);
+
+    try {
+      const selectedProducts = products.filter(product => 
+        selectedItems.has(product._id)
+      );
+
+      // প্রতিটি selected product এর জন্য add to cart call করুন
+      const promises = selectedProducts.map(product => 
+        addToCartApi({
+          productId: product._id,
+          quantity: 1 // Default quantity 1
+        }).unwrap()
+      );
+
+      // সবগুলো product একসাথে add করুন
+      const results = await Promise.all(promises);
+
+      // Redux store এও add করুন (immediate UI update এর জন্য)
+      selectedProducts.forEach(product => {
+        dispatch(addToCart({
+          ...product,
+          quantity: 1,
+          selected: true
+        }));
+      });
+
+      // Success message
+      Swal.fire(
+        "Success!", 
+        `${selectedProducts.length} products added to cart!`, 
+        "success"
+      );
+
+      // Optional: Selection clear করুন
+      setSelectedItems(new Set());
+      setSelectAll(false);
+
+    } catch (error) {
+      console.error("Failed to add products to cart:", error);
+      Swal.fire(
+        "Error!", 
+        "Failed to add products to cart. Please try again.", 
+        "error"
+      );
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
   const selectedCount = selectedItems.size;
+
+  // Loading state
+  if (productsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white text-xl">Loading products...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-10">
         <div className="container mx-auto flex justify-start items-center">
-          <BreadCrumb name="Procedure Guide" title="Root Canal Treatment" />
+          <BreadCrumb name="Procedure Guide" title={procedureDetails?.name || "Procedure"} />
         </div>
+        
         {/* Hero Section */}
         <div className="relative bg-white rounded-2xl shadow-sm overflow-hidden mb-8">
           <div className="aspect-w-16 aspect-h-9">
@@ -65,6 +145,7 @@ export default function ProcedureDetails() {
           </div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
         </div>
+        
         <div className="mt-10">
           <h1 className="text-2xl font-bold text-white">
             {procedureDetails?.name}
@@ -76,57 +157,77 @@ export default function ProcedureDetails() {
 
         {/* Select All Header */}
         <div className="flex justify-between items-center mt-10">
-          <h2 className="text-2xl font-bold text-white">Products (08)</h2>
-          <label className="flex items-center space-x-3 cursor-pointer group">
-            <span className="text-gray-600">Select all</span>
-            <div className="relative">
-              <input
-                type="checkbox"
-                checked={selectAll}
-                onChange={handleSelectAll}
-                className="sr-only cursor-pointer bg-black"
-              />
-              <div
-                className={`w-5 h-5 rounded border-2 border-[#136BFB] bg-black  transition-all duration-200 ${
-                  selectAll ? "border-[#136BFB]" : ""
-                }`}
-              >
-                {selectAll && (
-                  <FaCheck className="w-3 h-3 text-[#136BFB] absolute top-1 left-1" />
-                )}
+          <h2 className="text-2xl font-bold text-white">
+            Products ({products.length})
+          </h2>
+          
+          {products.length > 0 && (
+            <label className="flex items-center space-x-3 cursor-pointer group">
+              <span className="text-gray-600">Select all</span>
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={selectAll}
+                  onChange={handleSelectAll}
+                  className="sr-only cursor-pointer bg-black"
+                />
+                <div
+                  className={`w-5 h-5 rounded border-2 border-[#136BFB] bg-black transition-all duration-200 ${
+                    selectAll ? "border-[#136BFB]" : ""
+                  }`}
+                >
+                  {selectAll && (
+                    <FaCheck className="w-3 h-3 text-[#136BFB] absolute top-1 left-1" />
+                  )}
+                </div>
               </div>
-            </div>
-          </label>
+            </label>
+          )}
         </div>
+        
         {/* Divider */}
         <div className="border-b-2 border-gray-700 my-5"></div>
 
         {/* Product Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4 mb-8">
-          {products.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              isSelected={selectedItems.has(product.id)}
-              onSelect={() => handleItemSelect(product.id)}
-            />
-          ))}
-        </div>
+        {products.length === 0 ? (
+          <div className="text-center py-10">
+            <p className="text-gray-400 text-xl">No products found for this procedure</p>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4 mb-8">
+              {products.map((product) => (
+                <ProductCard
+                  key={product._id}
+                  product={product}
+                  isSelected={selectedItems.has(product._id)}
+                  onSelect={() => handleItemSelect(product._id)}
+                />
+              ))}
+            </div>
 
-        {/* Add to Cart Button */}
-        <div className="flex justify-center">
-          <button
-            className={`flex items-center space-x-2 px-8 py-4 rounded-xl font-semibold text-white transition-all duration-200 ${
-              selectedCount > 0
-                ? "bg-blue-500 hover:bg-blue-600 transform hover:scale-105 shadow-lg hover:shadow-xl"
-                : "bg-gray-400 cursor-not-allowed"
-            }`}
-            disabled={selectedCount === 0}
-          >
-            <PiShoppingCartBold className="w-5 h-5" />
-            <span>Add To Cart {selectedCount > 0 && `(${selectedCount})`}</span>
-          </button>
-        </div>
+            {/* Add to Cart Button */}
+            <div className="flex justify-center">
+              <button
+                onClick={handleAddToCart}
+                disabled={selectedCount === 0 || isAddingToCart}
+                className={`flex items-center space-x-2 px-8 py-4 rounded-xl font-semibold text-white transition-all duration-200 ${
+                  selectedCount > 0 && !isAddingToCart
+                    ? "bg-blue-500 hover:bg-blue-600 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                    : "bg-gray-400 cursor-not-allowed"
+                }`}
+              >
+                <PiShoppingCartBold className="w-5 h-5" />
+                <span>
+                  {isAddingToCart 
+                    ? "Adding..." 
+                    : `Add To Cart ${selectedCount > 0 ? `(${selectedCount})` : ''}`
+                  }
+                </span>
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
