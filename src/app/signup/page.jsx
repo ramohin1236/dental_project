@@ -75,7 +75,7 @@ export default function SignUp() {
         text: "Welcome aboard!",
       });
 
-      router.push("/otp");
+      router.push(`/otp?email=${encodeURIComponent(formData.email)}`);
     } catch (err) {
       console.error("Signup failed:", err);
       Swal.fire({

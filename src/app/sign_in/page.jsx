@@ -31,7 +31,7 @@ export default function LogIn() {
       const decodedUser = jwtDecode(accessToken);
       console.log("Decoded User:", decodedUser);
 
-      // 🔥 redux + localStorage এ save
+
       dispatch(setUser({ user: decodedUser, token: accessToken }));
 
       Swal.fire({
@@ -39,7 +39,7 @@ export default function LogIn() {
         icon: "success",
       });
 
-      router.push("/signup");
+      router.push("/");
     } catch (error) {
       console.log("Login failed!", error);
       Swal.fire({

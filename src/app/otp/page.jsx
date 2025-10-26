@@ -4,7 +4,7 @@ import {
   useForgotPasswordMutation,
 } from "@/redux/feature/auth/authApi";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 import { useState, useEffect } from "react";
 import { IoClose } from "react-icons/io5";
@@ -18,14 +18,23 @@ export default function Otp() {
   const [resendMsg, setResendMsg] = useState("");
   const [email, setEmail] = useState("");
   const navigate = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    const savedEmail = localStorage.getItem("forgotPasswordEmail");
-    if (savedEmail) {
-      setEmail(savedEmail);
-      console.log("Email from localStorage:", savedEmail);
+    const queryEmail = searchParams?.get("email");
+    if (queryEmail) {
+      setEmail(queryEmail);
+      console.log("Email from query:", queryEmail);
+      return;
     }
-  }, []);
+    try {
+      const savedEmail = typeof window !== 'undefined' ? localStorage.getItem("forgotPasswordEmail") : null;
+      if (savedEmail) {
+        setEmail(savedEmail);
+        console.log("Email from localStorage (fallback):", savedEmail);
+      }
+    } catch {}
+  }, [searchParams]);
 
   const handleChange = (value, index) => {
     if (!isNaN(value)) {
@@ -68,13 +77,13 @@ export default function Otp() {
     try {
       const result = await verifyOtp({
         email: email,
-        code: parseInt(otpCode),
+        code: otpCode,
       }).unwrap();
 
       console.log("✅ OTP verified successfully:", result);
 
       if (result.statusCode === 200) {
-        console.log("🎉 Email verified successfully");
+        console.log(" Email verified successfully");
 
         if (result.data && result.data.resetToken) {
           localStorage.setItem("resetToken", result.data.resetToken);
@@ -92,7 +101,7 @@ export default function Otp() {
           console.log(" Verification successful, no reset token needed");
         }
 
-        navigate.push("/reset-password");
+        navigate.push("/sign_in");
       } else {
         console.log(" Unexpected response:", result);
         alert(result.message || "Verification failed");
@@ -119,7 +128,7 @@ export default function Otp() {
     console.log("📨 Resending code to:", email);
 
     try {
-      const result = await forgotPassword({ email: email }).unwrap();
+      const result = await forgotPassword(email).unwrap();
       console.log(" Resend successful:", result);
       setResendMsg("A new verification code has been sent to your email.");
     } catch (e) {

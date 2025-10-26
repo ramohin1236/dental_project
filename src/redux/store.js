@@ -12,6 +12,7 @@ import newsletterApi from './feature/newsletter/newsletterApi';
 import  {addressApi} from './feature/address/addressApi';
 import pagesApi from './feature/pages/pagesApi';
 import contactInfoApi from './feature/contact/contactInfoApi';
+import ordersApi from './feature/orders/ordersApi';
 import hotSellingApi from './feature/hotSellingApi/HotSellingApi';
 import cartReducer from './feature/cart/cartSlice';
 
@@ -58,6 +59,7 @@ export const store = configureStore({
         [hotSellingApi.reducerPath]: hotSellingApi.reducer,
         [pagesApi.reducerPath]: pagesApi.reducer,
         [contactInfoApi.reducerPath]: contactInfoApi.reducer,
+        [ordersApi.reducerPath]: ordersApi.reducer,
         cart: cartReducer
     },
 
@@ -75,7 +77,8 @@ export const store = configureStore({
             addressApi.middleware,
             hotSellingApi.middleware,
             pagesApi.middleware,
-            contactInfoApi.middleware
+            contactInfoApi.middleware,
+            ordersApi.middleware
         )
 })
 

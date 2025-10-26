@@ -7,8 +7,10 @@ import { useRouter } from "next/navigation"
 import BreadCrumb from "@/components/shared/BreadCrumb"
 import Checkbox from "@/components/shared/Checkbox"
 import { useSelector, useDispatch } from 'react-redux'
+import { clearCartLocal } from '@/redux/feature/cart/cartSlice'
 import { getBaseUrl } from '@/utils/getBaseUrl'
 import { useFetchMyAddressesQuery, useDeleteAddressMutation } from '@/redux/feature/address/addressApi'
+import { useCreateOrderMutation } from '@/redux/feature/orders/ordersApi'
 
 export default function Checkout() {
     const [isSelected, setIsSelected] = useState("")
@@ -32,7 +34,7 @@ export default function Checkout() {
   
     const { data: addressesData, isLoading: addressesLoading, error: addressesError } = useFetchMyAddressesQuery()
     const [deleteAddress, { isLoading: isDeleting }] = useDeleteAddressMutation()
- 
+    const [createOrder, { isLoading: placing }] = useCreateOrderMutation()
 
     const addresses = addressesData || []
 
@@ -84,7 +86,7 @@ export default function Checkout() {
         }
     }
 
-    const handlePlaceOrder = () => {
+    const handlePlaceOrder = async () => {
         if (!isSelected) {
             alert("Please select a shipping address")
             return
@@ -97,7 +99,27 @@ export default function Checkout() {
             alert("Please add products to cart first")
             return
         }
-        setShowSuccessModal(true)
+
+        const methodMap = { bank: 'stripe', cod: 'cod' };
+        const payload = {
+            addressId: isSelected,
+            paymentMethod: methodMap[selectedPayment] || selectedPayment
+        }
+
+        try {
+            const res = await createOrder(payload).unwrap()
+            // Clear local cart to keep Redux/UI in sync with backend
+            try { dispatch(clearCartLocal()); } catch {}
+            const paymentUrl = res?.data?.payment?.url
+            if (paymentUrl) {
+                window.location.href = paymentUrl
+                return
+            }
+            router.push('/congratulations')
+        } catch (e) {
+            console.error('Failed to place order', e)
+            alert(e?.data?.message || 'Failed to place order')
+        }
     }
 
     const formatAddress = (address) => {
@@ -108,21 +130,21 @@ export default function Checkout() {
         return `${address.recipientFirstName || ''} ${address.recipientLastName || ''}`.trim()
     }
 
-const getProductImage = (product) => {
+    const getProductImage = (product) => {
 
-  if (product.images && product.images.length > 0 && product.images[0]) {
-    return product.images[0].startsWith('http') 
-      ? product.images[0] 
-      : `${getBaseUrl()}${product.images[0]}`;
-  }
-  
-  if (product.image) {
-    return product.image.startsWith('http') 
-      ? product.image 
-      : `${getBaseUrl()}${product.image}`;
-  }
-  return '/image.png';
-};
+        if (product.images && product.images.length > 0 && product.images[0]) {
+            return product.images[0].startsWith('http') 
+                ? product.images[0] 
+                : `${getBaseUrl()}${product.images[0]}`;
+        }
+        
+        if (product.image) {
+            return product.image.startsWith('http') 
+                ? product.image 
+                : `${getBaseUrl()}${product.image}`;
+        }
+        return '/image.png';
+    };
 
     return (
         <div className="px-5 md:px-0">
@@ -354,10 +376,10 @@ const getProductImage = (product) => {
 
                         <button
                             onClick={handlePlaceOrder}
-                            // disabled={!isSelected || !selectedPayment || selectedProducts.length === 0}
+                            disabled={placing}
                             className="w-full bg-[#136BFB] text-white py-3 mt-6 rounded-lg font-semibold hover:bg-[#0f5ae6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                         Place Order
+                         {placing ? 'Placing...' : 'Place Order'}
                         </button>
                     </div>
                 </div>
