@@ -15,6 +15,7 @@ import { clearCartLocal } from "@/redux/feature/cart/cartSlice";
 
 export default function Navbar() {
   const products = useSelector((state) => state.cart);
+  const authUser = useSelector((state) => state?.auth?.user);
   const totalProduct = products?.products?.length ?? 0;
   const [mounted, setMounted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -122,9 +123,15 @@ export default function Navbar() {
 
           {/* Mobile Menu Button */}
           <div className="flex items-center space-x-2 md:hidden">
-            <Link href="/my_cart" className="text-white p-2">
-              <RiShoppingCart2Line className="h-5 w-5" />
-            </Link>
+            {authUser ? (
+              <Link href="/my_cart" className="text-white p-2">
+                <RiShoppingCart2Line className="h-5 w-5" />
+              </Link>
+            ) : (
+              <button onClick={() => navigate.push('/sign_in')} className="text-white px-3 py-1 border border-[#136BFB] rounded">
+                Log in
+              </button>
+            )}
             <button onClick={toggleSearch} className="text-white p-2">
               <CiSearch className="h-5 w-5" />
             </button>
@@ -197,78 +204,79 @@ export default function Navbar() {
               </button>
             </div>
             <div className="flex-1 flex items-center justify-end space-x-2">
-              <div className="w-full relative flex">
-                <Link
-                  href="/my_cart"
-                  className="w-full flex items-center justify-center px-3 py-2 border border-[#136BFB] text-[#136BFB] rounded-lg"
-                >
-                  <RiShoppingCart2Line className="h-5 w-5" />
-                </Link>
-                <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                  <p>{mounted ? totalProduct : 0}</p>
-                </div>
-              </div>
-              <div className="relative" ref={dropdownRef}>
-                <div
-                  className="flex items-center cursor-pointer group"
-                  onClick={toggleDropdown}
-                >
-                  <img
-                    src="https://i.ibb.co.com/RvFgZC8/aman.png"
-                    alt="profile"
-                    height={70}
-                    width={70}
-                    className=" rounded-full"
-                  />
-                </div>
-
-                {/* Dropdown Menu */}
-                {isDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+              {authUser ? (
+                <>
+                  <div className="w-full relative flex">
                     <Link
-                      href="/profile"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setIsDropdownOpen(false)}
+                      href="/my_cart"
+                      className="w-full flex items-center justify-center px-3 py-2 border border-[#136BFB] text-[#136BFB] rounded-lg"
                     >
-                      My Profile
+                      <RiShoppingCart2Line className="h-5 w-5" />
                     </Link>
-                    <Link
-                      href="/my_order"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setIsDropdownOpen(false)}
-                    >
-                      My Orders
-                    </Link>
-                    <Link
-                      href="/favourite"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setIsDropdownOpen(false)}
-                    >
-                      Favourite
-                    </Link>
-                    <Link
-                      href="/ai_support"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setIsDropdownOpen(false)}
-                    >
-                      Support
-                    </Link>
-                    <button
-                      className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
-                      onClick={handleLogout}
-                      disabled={isLoggingOut}
-                    >
-                      {isLoggingOut ? "Logging out..." : "Logout"}
-                    </button>
+                    <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                      <p>{mounted ? totalProduct : 0}</p>
+                    </div>
                   </div>
-                )}
-              </div>
-              {/* <Link href="/notification">
-                <button className="p-1 text-gray-400 hover:text-white relative">
-                  <LuBell className="h-8 w-8" />
-                  <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
-                </button>
-              </Link> */}
+                  <div className="relative" ref={dropdownRef}>
+                    <div
+                      className="flex items-center cursor-pointer group"
+                      onClick={toggleDropdown}
+                    >
+                      <img
+                        src="https://i.ibb.co.com/RvFgZC8/aman.png"
+                        alt="profile"
+                        height={70}
+                        width={70}
+                        className=" rounded-full"
+                      />
+                    </div>
+                    {isDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                        <Link
+                          href="/profile"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsDropdownOpen(false)}
+                        >
+                          My Profile
+                        </Link>
+                        <Link
+                          href="/my_order"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsDropdownOpen(false)}
+                        >
+                          My Orders
+                        </Link>
+                        <Link
+                          href="/favourite"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsDropdownOpen(false)}
+                        >
+                          Favourite
+                        </Link>
+                        <Link
+                          href="/ai_support"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsDropdownOpen(false)}
+                        >
+                          Support
+                        </Link>
+                        <button
+                          className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                          onClick={handleLogout}
+                          disabled={isLoggingOut}
+                        >
+                          {isLoggingOut ? "Logging out..." : "Logout"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <button onClick={() => navigate.push('/sign_in')} className="px-4 py-2 border border-[#136BFB] text-[#136BFB] rounded-lg">Log in</button>
+                  <button onClick={() => navigate.push('/signup')} className="px-4 py-2 bg-[#136BFB] text-white rounded-lg">Sign up</button>
+                </div>
+              )}
             </div>
           </div>
         </div>
