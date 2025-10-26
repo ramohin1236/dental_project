@@ -1,16 +1,34 @@
 "use client"
 import BreadCrumb from "@/components/shared/BreadCrumb";
+import { useGetContactInfoQuery, useSendContactMessageMutation } from "@/redux/feature/contact/contactInfoApi";
 import React, { useState } from "react";
 import { MdMail, MdPhone } from "react-icons/md";
-
+import Swal from "sweetalert2";
 
 export default function ContactUs() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const { data, isFetching, error } = useGetContactInfoQuery();
+  const [sendContactMessage, { isLoading: sending }] = useSendContactMessageMutation();
+  const emails = data?.emails || [];
+  const phones = data?.phone || [];
+  const socials = {
+    facebook: data?.facebook,
+    instagram: data?.instagram,
+    twitter: data?.twitter,
+  };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", { subject, message });
+    try {
+      const payload = { subject, content: message };
+      const res = await sendContactMessage(payload).unwrap();
+      Swal.fire("Sent", res?.message || "Your message has been sent.", "success");
+      setSubject("");
+      setMessage("");
+    } catch (err) {
+      Swal.fire("Error", err?.data?.message || "Failed to send message.", "error");
+    }
   };
 
   return (
@@ -27,12 +45,15 @@ export default function ContactUs() {
                 Email :
               </span>
               <div>
-                <div className="text-[#9F9C96] text-[23px]">
-                  youremail@gmail.com
-                </div>
-                <div className="text-[#9F9C96] text-[23px]">
-                  letstalk@gmail.com
-                </div>
+                {isFetching && <div className="text-white">Loading...</div>}
+                {error && <div className="text-red-400">Failed to load</div>}
+                {!isFetching && !error && (
+                  <div className="flex flex-col">
+                    {emails.map((em) => (
+                      <span key={em} className="text-white text-[18px]">{em}</span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -42,12 +63,15 @@ export default function ContactUs() {
                 Phone :
               </span>
               <div>
-                <div className="text-[#9F9C96] text-[23px]">
-                  (+1) (888) 750-6866
-                </div>
-                <div className="text-[#9F9C96] text-[23px]">
-                  (+1) (888) 785-3986
-                </div>
+                {isFetching && <div className="text-white">Loading...</div>}
+                {error && <div className="text-red-400">Failed to load</div>}
+                {!isFetching && !error && (
+                  <div className="flex flex-col">
+                    {phones.map((ph) => (
+                      <span key={ph} className="text-white text-[18px]">{ph}</span>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -97,9 +121,10 @@ export default function ContactUs() {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors duration-200"
+              disabled={sending}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-medium py-3 rounded-lg transition-colors duration-200"
             >
-              Send
+              {sending ? "Sending..." : "Send"}
             </button>
           </form>
         </div>
