@@ -11,6 +11,7 @@ export default function ProfileCard({
     name,
     email,
     phone,
+    gdc,
     avatar,
     onChangePassword,
 }) {
@@ -41,18 +42,18 @@ export default function ProfileCard({
 
             <div className="space-y-5 mb-10">
                 <div className="flex items-center gap-2 text-gray-300">
-                    <GrDocumentText className="w-5 h-5 text-[#9F9C96]" />
-                    <span className="font-mono text-[#9F9C96]">{phone}</span>
-                </div>
-
-                <div className="flex items-center gap-2 text-gray-300">
                     <LuMail className="w-5 h-5 text-[#9F9C96]" />
                     <span className="text-[#9F9C96]">{email}</span>
                 </div>
 
                 <div className="flex items-center gap-2 text-gray-300">
                     <FaPhoneAlt className="w-5 h-5 text-[#9F9C96]" />
-                    <span className="text-[#9F9C96]">+09554545475</span>
+                    <span className="text-[#9F9C96]">{phone}</span>
+                </div>
+
+                <div className="flex items-center gap-2 text-gray-300">
+                    <GrDocumentText className="w-5 h-5 text-[#9F9C96]" />
+                    <span className="font-mono text-[#9F9C96]">{gdc}</span>
                 </div>
             </div>
 

@@ -1,110 +1,20 @@
 "use client"
-import React, { useState } from "react";
-import { ConfigProvider, Table, Select } from "antd";
+import React, { useMemo, useState } from "react";
+import { ConfigProvider, Table } from "antd";
 import { IoEyeOutline } from "react-icons/io5";
 import { CiSearch } from "react-icons/ci";
 import { useRouter } from "next/navigation";
 import BreadCrumb from "@/components/shared/BreadCrumb";
+import { useGetMyOrdersQuery } from "@/redux/feature/orders/ordersApi";
+import { getBaseUrl } from "@/utils/getBaseUrl";
 
 
 
 export default function AllOrder() {
-  const [userDetailsModal, setUserDetailsModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [statusFilter, setStatusFilter] = useState("all");
   const [searchText, setSearchText] = useState("");
-
-  const AllOrderData = [
-    {
-      key: "#1201",
-      no: "1",
-      products: "Root canal kit, Gloves",
-      qty: "12",
-      total: "123456",
-      status: "Pending",
-    },
-    {
-      key: "#1202",
-      no: "2",
-      customer: "Liam Smith",
-      products: "Dental Mirror",
-      qty: "5",
-      total: "45678",
-      status: "Processing",
-    },
-    {
-      key: "#1203",
-      no: "3",
-      customer: "Emma Johnson",
-      products: "Syringes",
-      qty: "20",
-      total: "98765",
-      status: "Shipped",
-    },
-    {
-      key: "#1204",
-      no: "4",
-      customer: "Noah Brown",
-      products: "Gloves, Masks",
-      qty: "50",
-      total: "12300",
-      status: "Cancelled",
-    },
-    {
-      key: "#1205",
-      no: "5",
-      customer: "Olivia Jones",
-      products: "X-ray Film",
-      qty: "10",
-      total: "23450",
-      status: "Shipped",
-    },
-    {
-      key: "#1206",
-      no: "6",
-      customer: "Ava Garcia",
-      products: "Dental Drill",
-      qty: "3",
-      total: "76543",
-      status: "Processing",
-    },
-    {
-      key: "#1207",
-      no: "7",
-      customer: "William Martinez",
-      products: "Face Shields",
-      qty: "15",
-      total: "11200",
-      status: "Pending",
-    },
-    {
-      key: "#1208",
-      no: "8",
-      customer: "James Rodriguez",
-      products: "Anesthetic",
-      qty: "8",
-      total: "22000",
-      status: "Cancelled",
-    },
-    {
-      key: "#1209",
-      no: "9",
-      customer: "Sophia Lee",
-      products: "Gloves",
-      qty: "100",
-      total: "15000",
-      status: "Shipped",
-    },
-    {
-      key: "#1210",
-      no: "10",
-      customer: "Benjamin Walker",
-      products: "Masks",
-      qty: "60",
-      total: "9000",
-      status: "Pending",
-    }
-  ];
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const { data, isLoading, isFetching, error } = useGetMyOrdersQuery({ page, limit });
 
   const getStatusStyle = (status) => {
     const styles = {
@@ -116,6 +26,38 @@ export default function AllOrder() {
     return styles[status] || "bg-gray-100 text-gray-800";
   };
   const navigate = useRouter();
+
+  const rawOrders = data?.data?.items || data?.items || data?.data || [];
+  const totalOrders = data?.meta?.total || data?.data?.meta?.total || data?.total || rawOrders.length;
+
+  console.log("---->",data)
+
+  const tableData = useMemo(() => {
+    return (Array.isArray(rawOrders) ? rawOrders : []).map((order, idx) => {
+      const prods = Array.isArray(order.products) ? order.products : [];
+      const qty = prods.reduce((sum, p) => sum + (Number(p.quantity) || 0), 0);
+      const names = prods.slice(0, 2).map(p => p.name).filter(Boolean).join(', ');
+      const more = prods.length > 2 ? ` +${prods.length - 2} more` : '';
+      const first = prods[0] || {};
+      // Try multiple shapes: order.products[] may include image, images[], or nested product fields
+      let img = first?.image
+        || (Array.isArray(first?.images) ? first.images[0] : "")
+        || first?.product?.image
+        || (Array.isArray(first?.product?.images) ? first.product.images[0] : "");
+      if (img && !/^https?:\/\//i.test(img)) {
+        img = `${getBaseUrl()}${img}`;
+      }
+      return {
+        key: order._id || order.id || `#${idx + 1}`,
+        orderId: order._id || order.id,
+        products: names || '—',
+        qty: qty || 0,
+        total: order.total ?? order.subtotal ?? 0,
+        status: order.status || order.paymentStatus || 'pending',
+        image: img || '/image.png',
+      }
+    });
+  }, [rawOrders]);
   const columns = [
     { title: "Order Id", dataIndex: "key", key: "key" },
 
@@ -124,17 +66,20 @@ export default function AllOrder() {
       key: "product",
       render: (_, record) => (
         <div className="flex items-center gap-3">
-          <img
-            src={`https://avatar.iran.liara.run/public/${record?.no}`}
-            className="w-10 h-10 object-cover rounded-full"
-            alt="User Avatar"
-          />
+          <div className="w-10 h-10 rounded-full bg-neutral-700 overflow-hidden flex items-center justify-center">
+            <img
+              src={record?.image}
+              alt={record?.products || 'Product'}
+              className="w-full h-full object-cover"
+              onError={(e) => { e.currentTarget.src = '/image.png'; }}
+            />
+          </div>
           <span>{record?.products}</span>
         </div>
       ),
     },
     { title: "Quantity", dataIndex: "qty", key: "qty" },
-    { title: "Price", dataIndex: "total", key: "total" },
+    { title: "Price", dataIndex: "total", key: "total", render: (v) => `$${Number(v || 0).toFixed(2)}` },
     {
       title: "Status",
       dataIndex: "status",
@@ -156,9 +101,9 @@ export default function AllOrder() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
-              setSelectedUser(record);
-              setUserDetailsModal(true);
-              navigate("/order-details");
+              if (record?.orderId) {
+                navigate.push(`/my_order/${record.orderId}`);
+              }
             }}
             className="border border-[#3b3b3b] text-[#3b3b3b] rounded-lg p-[6px]"
             title="View Details"
@@ -169,19 +114,15 @@ export default function AllOrder() {
       ),
     },
   ];
-  const filteredData = AllOrderData.filter((item) => {
-    const matchesStatus =
-      statusFilter === "all" || item.status === statusFilter;
-    const matchesSearch =
-      (item.customer && item.customer.toLowerCase().includes(searchText.toLowerCase())) ||
-      (item.products && item.products.toLowerCase().includes(searchText.toLowerCase())) ||
-      (item.key && item.key.toLowerCase().includes(searchText.toLowerCase()));
-    return matchesStatus && matchesSearch;
-  });
-  const handleStatusChange = (orderId, newStatus) => {
-    console.log(`Order ${orderId} status updated to ${newStatus}`);
-    alert(`Order ${orderId} status changed to ${newStatus}`);
-  };
+  const filteredData = useMemo(() => {
+    if (!searchText) return tableData;
+    const txt = searchText.toLowerCase();
+    return tableData.filter((row) =>
+      String(row.key).toLowerCase().includes(txt) ||
+      String(row.products || '').toLowerCase().includes(txt) ||
+      String(row.status || '').toLowerCase().includes(txt)
+    );
+  }, [tableData, searchText]);
 
   return (
     <div className="container mx-auto">
@@ -232,8 +173,18 @@ export default function AllOrder() {
         <Table
           dataSource={filteredData}
           columns={columns}
-          pagination={{ pageSize: 10 }}
+          loading={isLoading || isFetching}
+          pagination={{
+            current: page,
+            pageSize: limit,
+            total: totalOrders,
+            onChange: (p, ps) => { setPage(p); setLimit(ps); },
+            showSizeChanger: true,
+          }}
           scroll={{ x: true }}
+          locale={{
+            emptyText: error ? 'Failed to load orders' : 'No orders found',
+          }}
         />
       </ConfigProvider>
     </div>

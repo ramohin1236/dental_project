@@ -5,18 +5,33 @@ import BreadCrumb from "@/components/shared/BreadCrumb";
 import { useFetchUserAddressesByIdQuery } from "@/redux/feature/address/addressApi";
 import React from "react";
 import { useSelector } from "react-redux";
+import { useGetMyProfileQuery } from "@/redux/feature/users/usersApi";
 
 export default function Profile() {
   const handleChangePassword = () => {
     console.log("Change password clicked");
   };
-  const user = useSelector((state) => state?.auth?.user);
-  console.log("Logged in user:", user);
-  console.log(user?.userId)
+  const authUser = useSelector((state) => state?.auth?.user);
+  const { data, isLoading, isFetching, error } = useGetMyProfileQuery();
+  const profile = data?.data || data || {};
 
-  if (!user || !user.userId) {
-  return <p>User not found</p>;
-}
+  if (isLoading || isFetching) {
+    return (
+      <div className="container mx-auto py-10">
+        <BreadCrumb name="Home" title="Profile" />
+        <div className="text-gray-300 mt-6">Loading profile...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-10">
+        <BreadCrumb name="Home" title="Profile" />
+        <div className="text-red-400 mt-6">Failed to load profile</div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -30,10 +45,11 @@ export default function Profile() {
             <div className="flex justify-center lg:justify-end">
               <div className="w-full max-w-md">
                 <ProfileCard
-                  name="Mr.jhon"
-                  email={user?.email}
-                  phone="01226565448545"
-                  avatar="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400"
+                  name={profile?.name || `${profile?.firstName || ''} ${profile?.lastName || ''}`.trim() || authUser?.name || '—'}
+                  email={profile?.email || authUser?.email || '—'}
+                  phone={profile?.phone || profile?.mobile || '—'}
+                  gdc={profile?.gdcNumber || profile?.gdc || '—'}
+                  avatar={profile?.avatar || profile?.image || profile?.profileImage || "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=400"}
                   onChangePassword={handleChangePassword}
                 />
               </div>

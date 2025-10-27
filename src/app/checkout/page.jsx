@@ -131,19 +131,18 @@ export default function Checkout() {
     }
 
     const getProductImage = (product) => {
+        console.log("Product--Image:", product)
+        // Try multiple shapes: direct fields or nested under product
+        const candidates = [];
+        if (Array.isArray(product?.images)) candidates.push(product.images[0]);
+        candidates.push(product?.image);
+        if (Array.isArray(product?.product?.images)) candidates.push(product.product.images[0]);
+        candidates.push(product?.product?.image);
 
-        if (product.images && product.images.length > 0 && product.images[0]) {
-            return product.images[0].startsWith('http') 
-                ? product.images[0] 
-                : `${getBaseUrl()}${product.images[0]}`;
-        }
-        
-        if (product.image) {
-            return product.image.startsWith('http') 
-                ? product.image 
-                : `${getBaseUrl()}${product.image}`;
-        }
-        return '/image.png';
+        let img = candidates.find(Boolean) || '';
+        if (!img) return '/image.png';
+        if (/^https?:\/\//i.test(img)) return img;
+        return `${getBaseUrl()}${img}`;
     };
 
     return (
@@ -158,7 +157,7 @@ export default function Checkout() {
                     <div className="flex items-center justify-between">
                         <h2 className="text-xl text-white font-semibold">Select Shipping Address</h2>
                         <button 
-                            onClick={() => router.push("/add-new-address")} 
+                            onClick={() => router.push("/profile")} 
                             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm"
                         >
                             Add New Address

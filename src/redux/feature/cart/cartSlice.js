@@ -90,9 +90,10 @@ export const cartSlice = createSlice({
 
     setCartFromServer: (state, action) => {
       const items = Array.isArray(action.payload) ? action.payload : [];
-    
+
       state.products = items.map((it) => ({
-        _id: it._id || it.productId || it.product?._id,
+        // Always prefer the PRODUCT id for Redux identity
+        _id: it.product?._id || it.productId || it._id,
         name: it.name || it.product?.name,
         price: it.price ?? it.product?.price ?? 0,
         image: it.image || it.product?.image,
@@ -104,7 +105,10 @@ export const cartSlice = createSlice({
     },
 
     clearCartLocal: (state) => {
-      Object.assign(state, initialState);
+      state.products = [];
+      state.selectedItems = 0;
+      state.totalPrice = 0;
+      state.selectedSubtotal = 0;
       saveCart(state);
     },
   },

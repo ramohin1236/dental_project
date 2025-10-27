@@ -13,6 +13,7 @@ import  {addressApi} from './feature/address/addressApi';
 import pagesApi from './feature/pages/pagesApi';
 import contactInfoApi from './feature/contact/contactInfoApi';
 import ordersApi from './feature/orders/ordersApi';
+import usersApi from './feature/users/usersApi';
 import hotSellingApi from './feature/hotSellingApi/HotSellingApi';
 import cartReducer from './feature/cart/cartSlice';
 
@@ -60,6 +61,7 @@ export const store = configureStore({
         [pagesApi.reducerPath]: pagesApi.reducer,
         [contactInfoApi.reducerPath]: contactInfoApi.reducer,
         [ordersApi.reducerPath]: ordersApi.reducer,
+        [usersApi.reducerPath]: usersApi.reducer,
         cart: cartReducer
     },
 
@@ -78,7 +80,8 @@ export const store = configureStore({
             hotSellingApi.middleware,
             pagesApi.middleware,
             contactInfoApi.middleware,
-            ordersApi.middleware
+            ordersApi.middleware,
+            usersApi.middleware
         )
 })
 

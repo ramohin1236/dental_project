@@ -17,6 +17,15 @@ const ordersApi = createApi({
     },
   }),
   endpoints: (builder) => ({
+    getMyOrders: builder.query({
+      query: ({ page = 1, limit = 10 } = {}) => ({
+        url: `/orders/my-orders`,
+        method: 'GET',
+        params: { page, limit },
+      }),
+      // Keep old data during pagination transitions
+      keepUnusedDataFor: 60,
+    }),
     createOrder: builder.mutation({
       query: (payload) => ({
         url: "/orders",
@@ -27,5 +36,5 @@ const ordersApi = createApi({
   }),
 });
 
-export const { useCreateOrderMutation } = ordersApi;
+export const { useCreateOrderMutation, useGetMyOrdersQuery } = ordersApi;
 export default ordersApi;

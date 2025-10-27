@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import React, { useRef, useState, useEffect } from "react";
 import { CiSearch } from "react-icons/ci";
 import { FaRegUser, FaTimes, FaBars } from "react-icons/fa";
@@ -24,6 +24,8 @@ export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const dispatch = useDispatch();
   const [logoutApi, { isLoading: isLoggingOut }] = useLogoutMutation();
 
@@ -42,6 +44,20 @@ export default function Navbar() {
     // mark mounted on client so we can avoid rendering client-only dynamic values
     setMounted(true);
   }, []);
+
+  // If we land on payment success/thank-you routes, ensure cart is cleared immediately
+  useEffect(() => {
+    if (!pathname) return;
+    const isSuccess = pathname.startsWith('/checkout/success') || pathname === '/congratulations';
+    if (isSuccess) {
+      try { dispatch(clearCartLocal()); } catch {}
+    }
+    // Also if orderId present in the URL, treat as success
+    const oid = searchParams?.get?.('orderId');
+    if (oid) {
+      try { dispatch(clearCartLocal()); } catch {}
+    }
+  }, [pathname, searchParams, dispatch]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);

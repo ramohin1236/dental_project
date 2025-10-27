@@ -35,14 +35,12 @@ const ProductDetails = () => {
     return !!items.find((i) => (i.product?._id || i.productId || i._id) === product._id || i._id === product._id);
   })();
 
-  // image select
   useEffect(() => {
     if (product && product.images && product.images.length > 0) {
       setSelectedImage(`${getBaseUrl()}${product.images[0]}`);
     }
   }, [product]);
 
-  // sync quantity input with server cart when page loads or cart changes
   useEffect(() => {
     if (!product) return;
     const items = cartData?.data?.items || cartData?.items || [];
@@ -54,7 +52,6 @@ const ProductDetails = () => {
     }
   }, [cartData, product]);
 
-  // also hydrate Redux cart from server here to keep global state in sync
   useEffect(() => {
     const items = cartData?.data?.items || cartData?.items;
     if (Array.isArray(items)) {
@@ -65,19 +62,16 @@ const ProductDetails = () => {
  const handleAddToCart = async (product) => {
   if (!IsLogin) { navigate.push('/sign_in'); return; }
   try {
-    // find current server quantity for this product
     const items = cartData?.data?.items || cartData?.items || [];
     const found = items.find((i) => (i.product?._id || i.productId || i._id) === product._id || i._id === product._id);
     const currentQty = Number(found?.quantity || 0);
 
     if (currentQty > 0) {
-      // set absolute quantity to current + input using PATCH
       const nextQty = Math.max(1, currentQty + Number(quantity || 0));
       await updateCartItem({ productId: product._id, quantity: nextQty }).unwrap();
       dispatch(setItemQuantity({ id: product._id, quantity: nextQty }));
       setQuantity(nextQty);
     } else {
-      // not in cart yet, add new with provided quantity
       await addToCartMutation({
         productId: product._id,
         quantity,
@@ -284,12 +278,13 @@ const ProductDetails = () => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-3 md:pt-4">
-              <button className="bg-[#136BFB] hover:bg-[#0f5ed1] px-6 md:px-8 py-2.5 md:py-3 rounded-md font-medium text-white w-full sm:w-auto whitespace-nowrap">
-                Buy Now
-              </button>
+         
               <button
                 onClick={()=>handleAddToCart(product)}
-                className="border border-[#136BFB] text-[#136BFB] px-6 md:px-8 py-2.5 md:py-3 rounded-md font-medium w-full sm:w-auto whitespace-nowrap"
+                className="border border-[#136BFB] text-[#136BFB] px-6 md:px-8 py-2.5 md:py-3 rounded-md font-medium w-full sm:w-auto whitespace-nowrap
+                cursor-pointer hover:bg-[#136BFB] hover:text-white transition
+                text-center
+                "
               >
                 Add To Cart
               </button>
