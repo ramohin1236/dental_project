@@ -6,6 +6,15 @@ const authApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${getBaseUrl()}/api/auth`,
     credentials: "include",
+    prepareHeaders: (headers, { getState }) => {
+      try {
+        const token = getState()?.auth?.token || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
+        if (token) {
+          headers.set('authorization', `Bearer ${token}`);
+        }
+      } catch {}
+      return headers;
+    },
   }),
   endpoints: (builder) => ({
     registerUser: builder.mutation({
@@ -57,6 +66,13 @@ const authApi = createApi({
         body: resetData,
       }),
     }),
+    changePassword: builder.mutation({
+      query: (payload) => ({
+        url: "/change-password",
+        method: "PATCH",
+        body: payload,
+      }),
+    }),
   }),
 });
 
@@ -66,6 +82,7 @@ export const {
   useForgotPasswordMutation,
   useVerifyOtpMutation, 
   useResetPasswordMutation,
-  useLogoutMutation
+  useLogoutMutation,
+  useChangePasswordMutation
 } = authApi;
 export default authApi;
