@@ -15,7 +15,6 @@ export default function Slider({
   className = "",
 }) {
   const { data: slider } = useFetchAllSlidersQuery({});
-  console.log("slider---->",slider)
 
   const [currentSlide, setCurrentSlide] = useState(0);
 

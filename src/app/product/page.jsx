@@ -16,11 +16,12 @@ export default function Product() {
   const searchParams = useSearchParams();
   const urlSearch = searchParams?.get('search') || '';
   const urlBrand = searchParams?.get('brand') || '';
+  const urlCategory = searchParams?.get('category') || '';
   const [currentPage, setCurrentPage] = useState(1);
   const [productPerPage] = useState(10);
 
   //  Filter States
-  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState(urlCategory ? [urlCategory] : []);
   const [selectedBrands, setSelectedBrands] = useState(urlBrand ? [urlBrand] : []);
   const [selectedProcedures, setSelectedProcedures] = useState([]);
   const [availability, setAvailability] = useState("");
@@ -57,6 +58,12 @@ export default function Product() {
     // When search changes, start from first page to show matches
     setCurrentPage(1);
   }, [urlSearch]);
+
+  useEffect(() => {
+    // Sync category from URL; replace selection and go to first page
+    setSelectedCategories(urlCategory ? [urlCategory] : []);
+    setCurrentPage(1);
+  }, [urlCategory]);
 
   //  Fetch all filter options
   const { data: categories } = useFetchAllCategoriesQuery({});

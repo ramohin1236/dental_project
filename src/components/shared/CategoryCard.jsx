@@ -9,7 +9,7 @@ const CategoryCard = ({ image, title, link, onClick }) => {
     if (onClick) {
       onClick();
     } else if (link) {
-      navigate(link);
+      navigate.push(link);
     }
   };
 

@@ -15,8 +15,7 @@ const OrderDetails = ({
         image: "https://images.pexels.com/photos/257736/pexels-photo-257736.jpeg?auto=compress&cs=tinysrgb&w=80&h=80&dpr=1"
     },
     subtotal = 300.00,
-    shippingFee = 5.00,
-    total = 355.00
+    total = 300.00
 }) => {
     const handleCancelOrder = () => {
         console.log('Cancel order clicked');
@@ -94,11 +93,6 @@ const OrderDetails = ({
                     <div className="flex justify-between items-center">
                         <span className="text-gray-400 text-sm">Subtotal</span>
                         <span className="text-white text-sm">{subtotal.toFixed(2)}$</span>
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                        <span className="text-gray-400 text-sm">Shipping fee</span>
-                        <span className="text-white text-sm">{shippingFee.toFixed(2)}$</span>
                     </div>
 
                     <div className="border-t border-gray-700 pt-3">

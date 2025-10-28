@@ -26,7 +26,7 @@ const ExploreByCategory = () => {
             key={idx}
             title={category?.name}
             image={`${getBaseUrl()}${category?.imageUrl}`}
-            link="/product"
+            link={`/product?category=${encodeURIComponent(category?._id || '')}`}
           />
         ))}
       </div>

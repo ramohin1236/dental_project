@@ -14,7 +14,7 @@ import { useCreateOrderMutation } from '@/redux/feature/orders/ordersApi'
 
 export default function Checkout() {
     const [isSelected, setIsSelected] = useState("")
-    const [selectedPayment, setSelectedPayment] = useState("")
+    const [selectedPayment, setSelectedPayment] = useState("bank")
     const [showEditModal, setShowEditModal] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [showSuccessModal, setShowSuccessModal] = useState(false)
@@ -52,8 +52,7 @@ export default function Checkout() {
         return total + (product.price * product.quantity)
     }, 0)
     
-    const shippingFee = selectedProducts.length > 0 ? 5.00 : 0
-    const total = subtotal + shippingFee
+    const total = subtotal
 
     const handleEdit = (address) => {
         setSelectedAddress(address)
@@ -100,7 +99,7 @@ export default function Checkout() {
             return
         }
 
-        const methodMap = { bank: 'stripe', cod: 'cod' };
+        const methodMap = { bank: 'stripe' };
         const payload = {
             addressId: isSelected,
             paymentMethod: methodMap[selectedPayment] || selectedPayment
@@ -326,10 +325,7 @@ export default function Checkout() {
                                 <span>Subtotal ({selectedProducts.length} items)</span>
                                 <span>${subtotal.toFixed(2)}</span>
                             </div>
-                            <div className="flex justify-between text-sm text-gray-300">
-                                <span>Delivery Fee</span>
-                                <span>${shippingFee.toFixed(2)}</span>
-                            </div>
+                            
                             <div className="flex justify-between text-lg font-semibold text-white pt-2 border-t border-gray-700">
                                 <span>Total Amount</span>
                                 <span className="text-blue-400">${total.toFixed(2)}</span>
@@ -360,16 +356,6 @@ export default function Checkout() {
                                         </div>
                                     ))}
                                 </div>
-                            </div>
-
-                            <div 
-                                className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                                    selectedPayment === "cod" ? 'bg-blue-500/20 border border-blue-500' : 'bg-neutral-700 hover:bg-neutral-600'
-                                }`}
-                                onClick={() => setSelectedPayment("cod")}
-                            >
-                                <Checkbox isSelected={selectedPayment === "cod"} />
-                                <span className="text-gray-300">Cash On Delivery</span>
                             </div>
                         </div>
 

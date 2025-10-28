@@ -103,8 +103,7 @@ const ShoppingCart = () => {
     0
   );
 
-  const shippingFee = 5.0;
-  const total = subtotal + shippingFee;
+  const total = subtotal;
 
   const allSelected =
     products.length > 0 &&
@@ -334,7 +333,6 @@ const ShoppingCart = () => {
           <div className="lg:col-span-1 bg-[#202020]">
             <OrderSummary
               subtotal={subtotal}
-              shippingFee={shippingFee}
               total={total}
               onProceedToCheckout={handleProceedToCheckout}
             />
