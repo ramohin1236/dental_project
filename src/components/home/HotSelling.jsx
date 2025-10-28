@@ -24,6 +24,7 @@ const HotSelling = () => {
           <HotSellingCard
             image={`${getBaseUrl()}${product?.images?.[0]}`}
             key={product._id}
+            id={product?.productId}
             product={product}
             onAddToCart={() => alert(`Added to Cart: ${product.name}`)}
             onWishlistClick={() => alert(`Wishlisted: ${product.name}`)}

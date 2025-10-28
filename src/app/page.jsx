@@ -1,24 +1,22 @@
-import React from 'react'
-import Slider from '../components/home/Slider'
-import ExploreByCategory from '../components/home/ExploreByCategory'
-import HotSelling from '../components/home/HotSelling'
-import MagicMoney from '../components/home/MagicMoney'
-import AboutUs from '../components/home/AboutUs'
-import Subscribe from '../components/home/Subscribe'
-
-
+import React from "react";
+import Slider from "../components/home/Slider";
+import ExploreByCategory from "../components/home/ExploreByCategory";
+import HotSelling from "../components/home/HotSelling";
+import MagicMoney from "../components/home/MagicMoney";
+import AboutUs from "../components/home/AboutUs";
+import Subscribe from "../components/home/Subscribe";
 
 const Home = () => {
   return (
     <div>
-        <Slider/>
-        <ExploreByCategory/>
-         <HotSelling/>
-         <MagicMoney/>
-         <AboutUs/>
-         <Subscribe/>
+      <Slider />
+      <ExploreByCategory />
+      <HotSelling />
+      <MagicMoney />
+      <AboutUs />
+      <Subscribe />
     </div>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

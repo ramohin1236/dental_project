@@ -7,23 +7,30 @@ import { useFetchAllCategoriesQuery } from "@/redux/feature/category/CategoriesA
 import { useFetchAllProcedureQuery } from "@/redux/feature/procedure/procedure";
 import { useFetchAllProductsQuery } from "@/redux/feature/products/productsApi";
 import { getBaseUrl } from "@/utils/getBaseUrl";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { BiSolidDownArrow } from "react-icons/bi";
 
 
 export default function Product() {
+  const searchParams = useSearchParams();
+  const urlSearch = searchParams?.get('search') || '';
+  const urlBrand = searchParams?.get('brand') || '';
   const [currentPage, setCurrentPage] = useState(1);
   const [productPerPage] = useState(10);
 
   //  Filter States
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [selectedBrands, setSelectedBrands] = useState([]);
+  const [selectedBrands, setSelectedBrands] = useState(urlBrand ? [urlBrand] : []);
   const [selectedProcedures, setSelectedProcedures] = useState([]);
   const [availability, setAvailability] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
 
   //  Query
+  const term = (urlSearch || '').trim().toLowerCase();
+  const isSearching = term.length > 0;
+
   const { data, isLoading } = useFetchAllProductsQuery({
     category: selectedCategories.join(","),
     brand: selectedBrands.join(","),
@@ -31,14 +38,25 @@ export default function Product() {
     availability,
     minPrice,
     maxPrice,
-    page: currentPage,
-    limit: productPerPage,
+    page: isSearching ? 1 : currentPage,
+    limit: isSearching ? 1000 : productPerPage,
   });
 
+
   const products = data?.data || [];
-  // console.log(products)
-  const totalProducts = data?.total || 0;
+  const viewProducts = term
+    ? products.filter((p) =>
+        (p?.name || '').toLowerCase().includes(term) ||
+        (p?.brand?.name || '').toLowerCase().includes(term)
+      )
+    : products;
+  const totalProducts = term ? viewProducts.length : (data?.total || 0);
   const totalPages = Math.ceil(totalProducts / productPerPage);
+
+  useEffect(() => {
+    // When search changes, start from first page to show matches
+    setCurrentPage(1);
+  }, [urlSearch]);
 
   //  Fetch all filter options
   const { data: categories } = useFetchAllCategoriesQuery({});
@@ -100,7 +118,7 @@ export default function Product() {
 
         <div className="flex flex-col md:flex-row gap-6 md:gap-5 min-h-screen px-2 sm:px-5 md:px-0">
           {/* =============== Filter Sidebar =============== */}
-          <div className="bg-gray-800 px-3 sm:px-5 rounded-lg w-full md:w-1/3 lg:w-1/4 xl:w-1/5 md:h-[90vh] h-auto mb-6 md:mb-0 overflow-y-auto z-20 relative">
+          <div className="bg-gray-800 px-3 sm:px-5 rounded-lg w-full md:w-1/3 lg:w-1/4 xl:w-1/5 md:h-[90vh] h-auto mb-6 md:mb-0 overflow-y-auto no-scrollbar z-20 relative">
             <div className="space-y-5">
 
               {/* 🏷 Price Filter */}
@@ -317,7 +335,7 @@ export default function Product() {
           {/* =============== Product Cards =============== */}
           <div className="w-full md:w-2/3 lg:w-3/4 xl:w-4/5 flex flex-col">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 w-full">
-              {products.map((product) => (
+              {viewProducts.map((product) => (
                 <HotSellingCard
                   key={product._id}
                   id={product?.productId}

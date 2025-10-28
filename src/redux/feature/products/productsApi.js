@@ -45,6 +45,10 @@ const productsApi = createApi({
           queryParams.append("minPrice", params.minPrice);
         if (params.maxPrice !== undefined && params.maxPrice !== "")
           queryParams.append("maxPrice", params.maxPrice);
+        if (params.search) {
+          queryParams.append("search", params.search);
+          queryParams.append("q", params.search);
+        }
         queryParams.append("page", params.page || 1);
         queryParams.append("limit", params.limit || 10);
 
@@ -55,7 +59,7 @@ const productsApi = createApi({
     }),
 
     fetchProductbyId: builder.query({
-      query: (productId) => `byid/${productId}`,
+      query: (productId) => `${productId}`,
       providesTags: (result, error, id) => [{ type: "Products", id }],
     }),
   }),

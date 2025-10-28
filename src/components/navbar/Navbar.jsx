@@ -22,12 +22,46 @@ export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [searchText, setSearchText] = useState("");
   const dropdownRef = useRef(null);
+  const debounceRef = useRef(null);
   const navigate = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const dispatch = useDispatch();
   const [logoutApi, { isLoading: isLoggingOut }] = useLogoutMutation();
+
+  const handleSearchChange = (e) => {
+    const v = e.target.value;
+    setSearchText(v);
+    if (v.trim() === '') {
+      navigate.push(`/product`);
+    }
+  };
+
+  const performSearch = async () => {
+    const q = (searchText || "").trim();
+    if (!q) {
+      navigate.push(`/product`);
+      return;
+    }
+    navigate.push(`/product?search=${encodeURIComponent(q)}`);
+    setIsMenuOpen(false);
+    setIsSearchOpen(false);
+  };
+
+  useEffect(() => {
+    const q = (searchText || '').trim();
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      if (q) {
+        navigate.push(`/product?search=${encodeURIComponent(q)}`);
+      }
+    }, 300);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [searchText, navigate]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -41,18 +75,15 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    // mark mounted on client so we can avoid rendering client-only dynamic values
     setMounted(true);
   }, []);
 
-  // If we land on payment success/thank-you routes, ensure cart is cleared immediately
   useEffect(() => {
     if (!pathname) return;
     const isSuccess = pathname.startsWith('/checkout/success') || pathname === '/congratulations';
     if (isSuccess) {
       try { dispatch(clearCartLocal()); } catch {}
     }
-    // Also if orderId present in the URL, treat as success
     const oid = searchParams?.get?.('orderId');
     if (oid) {
       try { dispatch(clearCartLocal()); } catch {}
@@ -213,9 +244,12 @@ export default function Navbar() {
               <input
                 type="text"
                 placeholder="Search..."
-                className="bg-black border border-[#136BFB] rounded-xl pl-10 pr-4 py-2 text-white placeholder-[#136BFB] focus:outline-none w-40 sm:w-48 md:w-64"
+                value={searchText}
+                onChange={handleSearchChange}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); performSearch(); } }}
+                className="bg-black border border-[#136BFB] rounded-xl pl-10 pr-10 py-2 text-white placeholder-[#136BFB] focus:outline-none w-40 sm:w-48 md:w-64"
               />
-              <button className="absolute inset-y-0 right-0 pr-3 flex items-center">
+              <button className="absolute inset-y-0 right-0 pr-3 flex items-center" onClick={performSearch}>
                 <VscSettings className="h-5 w-5 text-[#136BFB]" />
               </button>
             </div>
@@ -307,9 +341,12 @@ export default function Navbar() {
               <input
                 type="text"
                 placeholder="Search..."
-                className="w-full bg-black border border-[#136BFB] rounded-xl pl-10 pr-4 py-2 text-white placeholder-[#136BFB] focus:outline-none"
+                value={searchText}
+                onChange={handleSearchChange}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); performSearch(); } }}
+                className="w-full bg-black border border-[#136BFB] rounded-xl pl-10 pr-10 py-2 text-white placeholder-[#136BFB] focus:outline-none"
               />
-              <button className="absolute inset-y-0 right-0 pr-3 flex items-center">
+              <button className="absolute inset-y-0 right-0 pr-3 flex items-center" onClick={performSearch}>
                 <VscSettings className="h-5 w-5 text-[#136BFB]" />
               </button>
             </div>

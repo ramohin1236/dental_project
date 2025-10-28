@@ -9,7 +9,7 @@ const SectionHeading = ({
   className = ""
 }) => {
   return (
-    <div className={`container mx-auto px-5 md:px-0 flex items-center justify-between  py-10 ${className}`}>
+    <div className={`container mx-auto  px-5 md:px-0 flex items-center justify-between  py-10 ${className}`}>
       {/* Left side - Title */}
       <div className="flex items-center">
         {/* Blue accent bar */}
