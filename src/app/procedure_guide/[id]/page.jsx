@@ -211,13 +211,20 @@ export default function ProcedureDetails() {
               <button
                 onClick={handleAddToCart}
                 disabled={selectedCount === 0 || isAddingToCart}
-                className={`flex items-center space-x-2 px-8 py-4 rounded-xl font-semibold text-white transition-all duration-200 ${
+                aria-busy={isAddingToCart}
+                className={`flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-semibold text-white transition-all duration-200 ${
                   selectedCount > 0 && !isAddingToCart
                     ? "bg-blue-500 hover:bg-blue-600 transform hover:scale-105 shadow-lg hover:shadow-xl"
-                    : "bg-gray-400 cursor-not-allowed"
+                    : "bg-gray-500 cursor-not-allowed opacity-80"
                 }`}
               >
-                <PiShoppingCartBold className="w-5 h-5" />
+                {isAddingToCart ? (
+                  <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                  </svg>
+                ) : (
+                  <PiShoppingCartBold className="w-5 h-5" />
+                )}
                 <span>
                   {isAddingToCart 
                     ? "Adding..." 

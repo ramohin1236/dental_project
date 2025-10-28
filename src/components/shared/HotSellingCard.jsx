@@ -68,15 +68,13 @@ const HotSellingCard = ({ product, image, title, description, id }) => {
   const productId = id || product?._id;
 
   return (
-    <div className="bg-[#1E1E1E] rounded-lg p-4 shadow-lg">
-      {/* Image Section */}
-      <div className="relative rounded-md overflow-hidden cursor-pointer">
+    <div className="bg-[#1E1E1E] rounded-lg p-4 shadow-lg flex flex-col h-full">
+      <div className="relative rounded-md overflow-hidden cursor-pointer aspect-square sm:aspect-[4/5] bg-[#0f0f0f] flex items-center justify-center">
         <img
           src={productImage}
           alt={productTitle}
-          className="w-full h-[280px] object-cover"
+          className="w-full h-full object-cover"
         />
-        {/* Heart Icon */}
         <div className="absolute top-2 right-2">
           <img
             src="/favourite.svg"
@@ -87,25 +85,32 @@ const HotSellingCard = ({ product, image, title, description, id }) => {
         </div>
       </div>
 
-      {/* Text and Buttons */}
-      <div className="flex flex-col gap-4 mt-4">
-        <p className="text-white text-lg font-semibold line-clamp-1">{productTitle}</p>
-        <p className="text-gray-400 text-sm line-clamp-2">
+      <div className="flex flex-col gap-3 mt-4 flex-1">
+        <p className="text-white text-base sm:text-lg font-semibold line-clamp-2 min-h-[2.5rem] sm:min-h-[2.75rem]">{productTitle}</p>
+        <p className="text-gray-400 text-xs sm:text-sm line-clamp-2 min-h-[2.5rem]">
           {productDescription}
         </p>
-        <div className="flex justify-between gap-2">
+        <div className="mt-auto flex flex-col md:flex-row items-stretch md:items-center gap-2">
           <Link
             href={`/product/${productId}`}
-            className="px-4 py-2 rounded-md text-[#136BFB] border border-[#136BFB] cursor-pointer whitespace-nowrap hover:bg-[#136BFB] hover:text-white transition-colors"
+            className="flex-1 min-w-0 px-3 py-2 md:px-3 md:py-2 lg:px-3 lg:py-2 rounded-md text-[#136BFB] border border-[#136BFB] cursor-pointer hover:bg-[#136BFB] hover:text-white transition-colors text-sm md:text-sm lg:text-base text-center truncate"
           >
             View Details
           </Link>
           <button
             onClick={handleAddToCart}
             disabled={isLoading}
-            className="bg-[#136BFB] px-4 py-2 rounded-md text-white border border-[#136BFB] cursor-pointer whitespace-nowrap hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            aria-busy={isLoading}
+            className={`flex-1 min-w-0 px-3 py-2 md:px-3 md:py-2 lg:px-3 lg:py-2 rounded-md text-white border transition-colors text-sm md:text-sm lg:text-base truncate flex items-center justify-center gap-2 ${
+              isLoading ? 'bg-blue-700 border-blue-700 opacity-80 cursor-not-allowed' : 'bg-[#136BFB] border-[#136BFB] hover:bg-blue-700'
+            }`}
           >
-            {isLoading ? "Adding..." : "Add To Cart"}
+            {isLoading && (
+              <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+              </svg>
+            )}
+            <span>{isLoading ? "Adding..." : "Add To Cart"}</span>
           </button>
         </div>
       </div>

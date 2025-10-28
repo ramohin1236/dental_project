@@ -65,7 +65,7 @@ const CartItem = ({
     })();
 
     return (
-        <form onSubmit={(e) => e.preventDefault()} className="contents">
+        <div className="contents">
             <div className="flex items-center gap-4 py-4 border-b border-gray-600 last:border-b-0">
                 {/* Checkbox */}
                 <div className="flex-shrink-0">
@@ -131,7 +131,7 @@ const CartItem = ({
                     </button>
                 </div>
             </div>
-        </form>
+        </div>
     );
 };
 

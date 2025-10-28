@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/navbar/Navbar";
+import TopProgress from "@/components/shared/TopProgress";
 import Footer from "@/components/footer/Footer";
 import ReduxProvider from "@/redux/ReduxProvider";
 
@@ -26,6 +27,7 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ReduxProvider>
+          <TopProgress />
           <Navbar />
           <div className="min-h-screen">{children}</div>
           <Footer />

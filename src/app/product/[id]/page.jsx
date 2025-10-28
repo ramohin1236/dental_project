@@ -23,6 +23,7 @@ const ProductDetails = () => {
   const { data: cartData, refetch } = useGetCartQuery(undefined, { refetchOnMountOrArgChange: true, refetchOnFocus: true });
   const [updateCartItem] = useUpdateCartItemMutation();
   const [removeCartItem] = useRemoveCartItemMutation();
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const { data, isLoading, isError } = useFetchProductbyIdQuery(id);
   const product = data?.data;
@@ -62,6 +63,7 @@ const ProductDetails = () => {
  const handleAddToCart = async (product) => {
   if (!IsLogin) { navigate.push('/sign_in'); return; }
   try {
+    setIsAddingToCart(true);
     const items = cartData?.data?.items || cartData?.items || [];
     const found = items.find((i) => (i.product?._id || i.productId || i._id) === product._id || i._id === product._id);
     const currentQty = Number(found?.quantity || 0);
@@ -87,6 +89,8 @@ const ProductDetails = () => {
 
   } catch (e) {
     console.log("Cart API Error:", e);
+  } finally {
+    setIsAddingToCart(false);
   }
 }
 
@@ -281,12 +285,17 @@ const ProductDetails = () => {
          
               <button
                 onClick={()=>handleAddToCart(product)}
-                className="border border-[#136BFB] text-[#136BFB] px-6 md:px-8 py-2.5 md:py-3 rounded-md font-medium w-full sm:w-auto whitespace-nowrap
-                cursor-pointer hover:bg-[#136BFB] hover:text-white transition
-                text-center
-                "
+                disabled={isAddingToCart}
+                aria-busy={isAddingToCart}
+                className={`px-6 md:px-8 py-2.5 md:py-3 rounded-md font-medium w-full sm:w-auto whitespace-nowrap text-center flex items-center justify-center gap-2 transition border
+                  ${isAddingToCart ? 'bg-blue-700 border-blue-700 text-white opacity-80 cursor-not-allowed' : 'border-[#136BFB] text-[#136BFB] hover:bg-[#136BFB] hover:text-white'}`}
               >
-                Add To Cart
+                {isAddingToCart && (
+                  <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                  </svg>
+                )}
+                <span>{isAddingToCart ? 'Adding...' : 'Add To Cart'}</span>
               </button>
              
             </div>
