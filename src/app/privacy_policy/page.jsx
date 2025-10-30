@@ -1,12 +1,18 @@
 "use client";
 import BreadCrumb from "@/components/shared/BreadCrumb";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useGetPageByKeyQuery } from "@/redux/feature/pages/pagesApi";
 
 export default function PrivacyPolicy() {
+  const [isClient, setIsClient] = useState(false);
   const { data, isFetching, error } = useGetPageByKeyQuery("privacy");
+  
   const title = data?.data?.title || data?.title || "Privacy Policy";
   const content = data?.data?.content || data?.content || data?.data || "";
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#171717] text-white py-5">
@@ -18,7 +24,7 @@ export default function PrivacyPolicy() {
           <h1 className="text-2xl font-bold mb-5 text-white">{title}</h1>
           {isFetching && <p className="text-[#9F9C96]">Loading...</p>}
           {error && <p className="text-red-400">Failed to load content.</p>}
-          {!isFetching && !error && (
+          {!isFetching && !error && isClient && (
             typeof content === "string" ? (
               <div className="prose prose-invert max-w-none text-white" dangerouslySetInnerHTML={{ __html: content }} />
             ) : (
