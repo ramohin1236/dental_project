@@ -77,14 +77,12 @@ export default function ProcedureDetails() {
       const promises = selectedProducts.map(product => 
         addToCartApi({
           productId: product._id,
-          quantity: 1 // Default quantity 1
+          quantity: 1 
         }).unwrap()
       );
 
-      // সবগুলো product একসাথে add করুন
       const results = await Promise.all(promises);
 
-      // Redux store এও add করুন (immediate UI update এর জন্য)
       selectedProducts.forEach(product => {
         dispatch(addToCart({
           ...product,
@@ -100,7 +98,6 @@ export default function ProcedureDetails() {
         "success"
       );
 
-      // Optional: Selection clear করুন
       setSelectedItems(new Set());
       setSelectAll(false);
 

@@ -10,6 +10,8 @@ import { useParams,useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { FaTruck, FaUndo, FaMedal } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
+import { useFetchAllProcedureQuery } from "@/redux/feature/procedure/procedure";
+import Link from "next/link";
 
 
 const ProductDetails = () => {
@@ -24,6 +26,8 @@ const ProductDetails = () => {
   const [updateCartItem] = useUpdateCartItemMutation();
   const [removeCartItem] = useRemoveCartItemMutation();
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const { data: procedure } = useFetchAllProcedureQuery({});
+  console.log("product details procedure--->", procedure);
 
   const { data, isLoading, isError } = useFetchProductbyIdQuery(id);
   const product = data?.data;
@@ -228,9 +232,15 @@ const ProductDetails = () => {
               </p>
               <p>
                 Procedure:{" "}
-                <span className="text-[#136BFB] cursor-pointer hover:underline">
-                  {product.procedure?.name || "-"}
-                </span>
+                {product.procedure ? (
+                  <Link href={`/procedure_guide/${product.procedure._id}`}>
+                    <span className="text-[#136BFB] cursor-pointer hover:underline">
+                      {product.procedure.name}
+                    </span>
+                  </Link>
+                ) : (
+                  <span>Not specified</span>
+                )}
               </p>
             </div>
 
