@@ -1,7 +1,7 @@
-"use client"
+"use client";
 import { useSubscribeNewsletterMutation } from "@/redux/feature/newsletter/newsletterApi";
 import React, { useState } from "react";
-
+import { toast } from "sonner";
 
 export default function Subscribe() {
   const [email, setEmail] = useState("");
@@ -30,21 +30,33 @@ export default function Subscribe() {
       setMessage({ type: "error", text: "Please enter a valid email!" });
       return;
     }
-    
 
     try {
       const res = await subscribe({ email: value }).unwrap();
-      // success response expected e.g. { message: 'Subscribed successfully', ... }
       setMessage({
         type: "success",
         text: res?.message || "Subscribed successfully.",
       });
+      toast.success("Subscribed successfully.", {
+        style: {
+          background: "#dcfce7",
+          color: "#166534",
+          border: "1px solid #bbf7d0",
+        },
+      });
       setEmail("");
     } catch (err) {
       const text = getErrorMessage(err);
-      // special handling for Already subscribed message (backend returns 400 with message "Already subscribed")
       if (text.toLowerCase().includes("already")) {
-        setMessage({ type: "error", text: text }); // you can change type to 'info' if you prefer
+        setMessage({ type: "error", text: text });
+        toast.error(text, {
+          style: {
+            background: "#fef2f2",
+            color: "#dc2626",
+            border: "1px solid #fecaca",
+          },
+        });
+        setEmail("");
       } else {
         setMessage({ type: "error", text });
       }
@@ -67,14 +79,17 @@ export default function Subscribe() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4 w-full">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col items-center gap-4 w-full"
+        >
           <div className="w-full max-w-[50rem]">
             <input
               type="email"
               placeholder="Enter Your Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 bg-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+              className="w-full px-4 py-2 bg-white rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg text-black"
               required
             />
           </div>
@@ -86,19 +101,6 @@ export default function Subscribe() {
           >
             {isLoading ? "Subscribing..." : "Subscribe!"}
           </button>
-
-          {/* messages */}
-          {message && (
-            <div
-              className={`mt-4 max-w-[50rem] w-full text-center px-4 py-2 rounded ${
-                message.type === "success"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-red-100 text-red-800"
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
         </form>
       </div>
     </div>

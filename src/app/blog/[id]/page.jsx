@@ -2,6 +2,7 @@
 import BreadCrumb from "@/components/shared/BreadCrumb";
 import { useFetchBlogByIdQuery } from "@/redux/feature/blog/blogApi";
 import { getBaseUrl } from "@/utils/getBaseUrl";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import React from "react";
 import { MdOutlineDateRange } from "react-icons/md";
@@ -51,12 +52,12 @@ const BlogDetails = () => {
 
       {/* Go Back Button */}
       <div className="text-center">
-        <button
-          onClick={() => navigate(-1)}
+        <Link
+          href="/blog"
           className="px-6 py-2 bg-blue-600 hover:bg-blue-700 transition rounded-md text-white font-bold cursor-pointer"
         >
           Go Back to Blog
-        </button>
+        </Link>
       </div>
     </div>
   );

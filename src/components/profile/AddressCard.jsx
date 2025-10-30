@@ -38,14 +38,14 @@ const AddressCard = ({
                     </span>
                 </div>
                 <div className="flex items-center gap-1">
-                    <button
+                    {/* <button
                         onClick={onEdit}
                         disabled={isDeleting}
                         className="p-2 hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         aria-label="Edit address"
                     >
                         <TbUserEdit className="w-4 h-4 text-blue-400" />
-                    </button>
+                    </button> */}
                     <button
                         onClick={onDelete}
                         disabled={isDeleting}

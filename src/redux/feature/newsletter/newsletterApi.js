@@ -14,7 +14,7 @@ const newsletterApi = createApi({
       query: (emailData) => ({
         url: "/subscribe",
         method: "POST",
-        body: emailData, // { email: "example@gmail.com" }
+        body: emailData, 
       }),
       invalidatesTags: ["Newsletter"],
     }),

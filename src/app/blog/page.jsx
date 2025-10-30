@@ -12,7 +12,7 @@ const Blog = () => {
 
   // const navigate = useNavigate();
   const { data: blogs } = useFetchAllBlogsQuery({});
-  console.log(blogs);
+
 
   return (
     <div className="container text-white mx-auto">

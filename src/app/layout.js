@@ -4,6 +4,7 @@ import Navbar from "@/components/navbar/Navbar";
 import TopProgress from "@/components/shared/TopProgress";
 import Footer from "@/components/footer/Footer";
 import ReduxProvider from "@/redux/ReduxProvider";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +31,7 @@ export default function RootLayout({ children }) {
           <TopProgress />
           <Navbar />
           <div className="min-h-screen">{children}</div>
+          <Toaster position="top-right" />
           <Footer />
         </ReduxProvider>
       </body>

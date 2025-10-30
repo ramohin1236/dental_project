@@ -52,6 +52,7 @@ const ShoppingCart = () => {
 
   
   const [productQuantities, setProductQuantities] = useState({});
+  const [loadingItems, setLoadingItems] = useState({});
 
   useEffect(() => {
     const initialQuantities = {};
@@ -90,27 +91,32 @@ const ShoppingCart = () => {
 
     console.log("🔄 Increment:", productId, currentQty, "→", newQty);
 
+    // Set loading state
+    setLoadingItems(prev => ({ ...prev, [productId]: true }));
     
+    // Optimistic update
     setProductQuantities((prev) => ({
       ...prev,
       [productId]: newQty,
     }));
 
     try {
-      
-      const result = await updateCartItem({
+      await updateCartItem({
         productId: productId, 
         quantity: newQty,
       }).unwrap();
 
-      console.log(" Quantity updated successfully:", result);
+      console.log("Quantity updated successfully:");
     } catch (error) {
-     
+      // Revert on error
       setProductQuantities((prev) => ({
         ...prev,
         [productId]: currentQty,
       }));
-      console.error(" Failed to update quantity:", error);
+      console.error("Failed to update quantity:", error);
+    } finally {
+      // Clear loading state
+      setLoadingItems(prev => ({ ...prev, [productId]: false }));
     }
   };
 
@@ -120,20 +126,22 @@ const ShoppingCart = () => {
 
     console.log("🔄 Decrement:", productId, currentQty, "→", newQty);
 
+    // Set loading state
+    setLoadingItems(prev => ({ ...prev, [productId]: true }));
     
+    // Optimistic update
     setProductQuantities((prev) => ({
       ...prev,
       [productId]: newQty,
     }));
 
     try {
-      
-      const result = await updateCartItem({
+      await updateCartItem({
         productId: productId, 
         quantity: newQty,
       }).unwrap();
 
-      console.log("Quantity updated successfully:", result);
+      console.log("Quantity updated successfully:");
     } catch (error) {
       // Revert on error
       setProductQuantities((prev) => ({
@@ -141,6 +149,9 @@ const ShoppingCart = () => {
         [productId]: currentQty,
       }));
       console.error("Failed to update quantity:", error);
+    } finally {
+      // Clear loading state
+      setLoadingItems(prev => ({ ...prev, [productId]: false }));
     }
   };
 
@@ -150,20 +161,22 @@ const ShoppingCart = () => {
 
     console.log("🔄 Direct change:", productId, currentQty, "→", validQuantity);
 
+    // Set loading state
+    setLoadingItems(prev => ({ ...prev, [productId]: true }));
     
+    // Optimistic update
     setProductQuantities((prev) => ({
       ...prev,
       [productId]: validQuantity,
     }));
 
     try {
-      
-      const result = await updateCartItem({
+      await updateCartItem({
         productId: productId, 
         quantity: validQuantity,
       }).unwrap();
 
-      console.log("Quantity updated successfully:", result);
+      console.log("Quantity updated successfully:");
     } catch (error) {
       // Revert on error
       setProductQuantities((prev) => ({
@@ -171,6 +184,9 @@ const ShoppingCart = () => {
         [productId]: currentQty,
       }));
       console.error("Failed to update quantity:", error);
+    } finally {
+      // Clear loading state
+      setLoadingItems(prev => ({ ...prev, [productId]: false }));
     }
   };
 
@@ -287,6 +303,7 @@ const ShoppingCart = () => {
                         handleQuantityChange(product._id, newQty)
                       }
                       onDeleteItem={() => handleDeleteItem(product._id)}
+                      isLoading={loadingItems[product._id] || false}
                     />
                   ))
                 ) : (

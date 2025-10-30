@@ -1,9 +1,11 @@
 "use client"
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import { IoEyeOffOutline, IoEyeOutline, IoClose } from "react-icons/io5";
+import { IoEyeOffOutline, IoEyeOutline, IoClose, IoArrowBack } from "react-icons/io5";
 import { useRouter } from "next/navigation";
 import { useResetPasswordMutation } from "@/redux/feature/auth/authApi";
+import { toast } from "sonner";
+
 
 export default function ResetPassword() {
   const [formData, setFormData] = useState({
@@ -19,14 +21,13 @@ export default function ResetPassword() {
   const [resetPassword, { isLoading, isError, error }] = useResetPasswordMutation();
   const router = useRouter();
 
-  // ✅ Debug korar jonno - component load e check koro resetToken ache kina
   useEffect(() => {
     const token = localStorage.getItem("resetToken");
     console.log("ResetToken from localStorage:", token);
     setResetToken(token || "");
     
     if (!token) {
-      console.error("❌ No resetToken found in localStorage!");
+      console.error("No resetToken found in localStorage!");
       console.log("Available localStorage items:", {
         forgotPasswordEmail: localStorage.getItem("forgotPasswordEmail"),
         resetToken: localStorage.getItem("resetToken"),
@@ -74,12 +75,11 @@ export default function ResetPassword() {
       return;
     }
 
-    // ✅ Debug: Current resetToken check koro
     const currentToken = localStorage.getItem("resetToken");
     console.log("🔍 Submitting with resetToken:", currentToken);
     
     if (!currentToken) {
-      alert("Reset token not found. Please restart the password reset process.");
+      toast.error("Reset token not found. Please restart the password reset process.");
       return;
     }
 
@@ -94,12 +94,17 @@ export default function ResetPassword() {
       const result = await resetPassword(resetData).unwrap();
       console.log("✅ Password reset successful:", result);
       
+      // Show success message
+      toast.success("Password reset successfully! Redirecting to login...");
+      
       // Clear local storage
       localStorage.removeItem("resetToken");
       localStorage.removeItem("forgotPasswordEmail");
       
-      // Success page e navigate koro
-      router.push("/congratulations");
+      // Redirect to login page after a short delay
+      setTimeout(() => {
+        router.push("/sign_in");
+      }, 2000);
       
     } catch (err) {
       console.error("❌ Failed to reset password:", err);
@@ -116,16 +121,24 @@ export default function ResetPassword() {
       {/* Left Column - Form */}
       <div className="w-full md:w-1/2 bg-[#171717] p-8 flex flex-col justify-center relative">
         <div className="max-w-md mx-auto w-full">
-          <h1 className="text-center text-3xl font-bold text-white mb-4">Reset Password</h1>
-          <p className="text-center text-[#9F9C96] mb-8">Enter your new password</p>
-
+          <button 
+            onClick={() => router.back()}
+            className="absolute -top-16 left-0 text-white hover:text-gray-300 flex items-center mb-4"
+          >
+            <IoArrowBack className="mr-1" /> Back
+          </button>
+          <h1 className="text-center text-3xl font-bold text-white mb-4">
+            Reset Password
+          </h1>
+          <p className="text-center text-[#9F9C96] mb-8">
+            Create a new password for your account.
+          </p>
           {/* ✅ Debug Info */}
           {!resetToken && (
             <div className="bg-yellow-500 text-black p-3 rounded mb-4 text-sm">
               ⚠️ No reset token found. Please complete OTP verification first.
             </div>
           )}
-
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label className="block text-gray-300 text-sm mb-2">New Password</label>
@@ -200,13 +213,25 @@ export default function ResetPassword() {
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={isLoading || !resetToken}
-              className="w-full bg-[#136BFB] text-white text-lg font-bold py-3 px-4 rounded-lg transition mt-5 disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              {isLoading ? "Resetting Password..." : "Reset Password"}
-            </button>
+            <div className="mt-6">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-[#136BFB] text-white text-lg font-bold py-3 px-4 rounded-lg hover:bg-blue-600 transition mt-5 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                {isLoading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Resetting...
+                  </>
+                ) : (
+                  "Reset Password"
+                )}
+              </button>
+            </div>
           </form>
         </div>
       </div>

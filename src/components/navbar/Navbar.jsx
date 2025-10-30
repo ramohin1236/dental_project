@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { useMemo } from "react";
 import React, { useRef, useState, useEffect } from "react";
 import { CiSearch } from "react-icons/ci";
 import { FaRegUser, FaTimes, FaBars } from "react-icons/fa";
@@ -27,6 +28,15 @@ export default function Navbar() {
   const debounceRef = useRef(null);
   const navigate = useRouter();
   const pathname = usePathname();
+  
+  // Highlight the current active page in navbar
+  const isLinkActive = (path) => {
+    if (path === '/') {
+      return pathname === path; 
+    }
+    
+    return pathname.startsWith(path);
+  };
   const searchParams = useSearchParams();
   const dispatch = useDispatch();
   const [logoutApi, { isLoading: isLoggingOut }] = useLogoutMutation();
@@ -199,37 +209,38 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-6 lg:space-x-8">
             <Link
               href="/"
-              className="text-white hover:text-gray-300 transition-colors"
+              className={`${isLinkActive('/') ? 'text-[#136BFB] font-medium' : 'text-white hover:text-gray-300'} transition-colors`}
             >
               Home
             </Link>
+         
             <Link
               href="/product"
-              className="text-white hover:text-gray-300 transition-colors"
+              className={`${isLinkActive('/product') ? 'text-[#136BFB] font-medium' : 'text-white hover:text-gray-300'} transition-colors`}
             >
               Product
             </Link>
             <Link
               href="/allcategory"
-              className="text-white hover:text-gray-300 transition-colors"
+              className={`${isLinkActive('/allcategory') ? 'text-[#136BFB] font-medium' : 'text-white hover:text-gray-300'} transition-colors`}
             >
               Category
             </Link>
             <Link
               href="/procedure_guide"
-              className="text-white hover:text-gray-300 transition-colors"
+              className={`${isLinkActive('/procedure_guide') ? 'text-[#136BFB] font-medium' : 'text-white hover:text-gray-300'} transition-colors`}
             >
               Procedure Guide
             </Link>
             <Link
               href="/pharmaceuticals"
-              className="text-white hover:text-gray-300 transition-colors"
+              className={`${isLinkActive('/pharmaceuticals') ? 'text-[#136BFB] font-medium' : 'text-white hover:text-gray-300'} transition-colors`}
             >
               Pharmaceuticals
             </Link>
             <Link
               href="/blog"
-              className="text-white hover:text-gray-300 transition-colors"
+              className={`${isLinkActive('/blog') ? 'text-[#136BFB] font-medium' : 'text-white hover:text-gray-300'} transition-colors`}
             >
               Blog
             </Link>
@@ -249,9 +260,9 @@ export default function Navbar() {
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); performSearch(); } }}
                 className="bg-black border border-[#136BFB] rounded-xl pl-10 pr-10 py-2 text-white placeholder-[#136BFB] focus:outline-none w-40 sm:w-48 md:w-64"
               />
-              <button className="absolute inset-y-0 right-0 pr-3 flex items-center" onClick={performSearch}>
+              {/* <button className="absolute inset-y-0 right-0 pr-3 flex items-center" onClick={performSearch}>
                 <VscSettings className="h-5 w-5 text-[#136BFB]" />
-              </button>
+              </button> */}
             </div>
             <div className="flex-1 flex items-center justify-end space-x-2">
               {authUser ? (
@@ -392,10 +403,17 @@ export default function Navbar() {
             <div className="flex flex-col space-y-5">
               <Link
                 href="/"
-                className="text-white hover:text-gray-300 transition-colors"
-                onClick={toggleMenu}
+                className={`block py-2 px-4 ${isLinkActive('/') ? 'text-[#136BFB] font-medium' : 'text-white hover:bg-gray-700'}`}
+                onClick={() => setIsMenuOpen(false)}
               >
                 Home
+              </Link>
+              <Link
+                href="/about_us"
+                className={`block py-2 px-4 ${isLinkActive('/about_us') ? 'text-[#136BFB] font-medium' : 'text-white hover:bg-gray-700'}`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                About Us
               </Link>
               <Link
                 href="/product"
@@ -427,8 +445,8 @@ export default function Navbar() {
               </Link>
               <Link
                 href="/blog"
-                className="text-white hover:text-gray-300 transition-colors"
-                onClick={toggleMenu}
+                className={`block py-2 px-4 ${isLinkActive('/blog') ? 'text-[#136BFB] font-medium' : 'text-white hover:bg-gray-700'}`}
+                onClick={() => setIsMenuOpen(false)}
               >
                 Blog
               </Link>

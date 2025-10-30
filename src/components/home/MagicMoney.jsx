@@ -117,7 +117,9 @@ export default function MagicMoney() {
                 },
               ].map((item, idx) =>
                 item.type === "operator" ? (
-                  <div key={idx} className="text-blue-400 text-2xl font-bold">
+                  <div key={idx} className="text-blue-400 text-2xl font-bold 
+                  ml-4
+                  ">
                     {item.symbol}
                   </div>
                 ) : item.isResult ? (

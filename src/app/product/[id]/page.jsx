@@ -268,6 +268,7 @@ const ProductDetails = () => {
                 <input
                   type="number"
                   min={1}
+                  disabled
                   value={quantity}
                   onChange={handleQuantityChange}
                   className="w-16 px-3 py-1 rounded-md bg-transparent border border-gray-500 text-white text-center"
