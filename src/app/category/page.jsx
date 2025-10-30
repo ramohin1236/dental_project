@@ -1,44 +1,24 @@
-"use client"
-import BreadCrumb from "@/components/shared/BreadCrumb";
-import CategoryCard from "@/components/shared/CategoryCard";
-import SectionHeading from "@/components/shared/SectionHeading";
-import { useFetchAllCategoriesQuery } from "@/redux/feature/category/CategoriesApi";
-import { getBaseUrl } from "@/utils/getBaseUrl";
-import React from "react";
+import { Suspense } from 'react';
+import dynamic from 'next/dynamic';
 
-
-const AllCategory = () => {
- 
-  const { data: categories } = useFetchAllCategoriesQuery({});
-  console.log(categories)
-
-  return (
-    <div>
-      <div className="mx-auto container text-white py-10">
-
-        <div className="container mx-auto flex justify-start items-center  px-5 md:px-0">
-          <BreadCrumb name="Home" title="Category" />
-        </div>
-
-        <SectionHeading
-          title="All Category"
-          showButton={false}
-        ></SectionHeading>
-
-        {/* cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-5 container mx-auto  px-5 md:px-0">
-          {categories?.map((category, idx) => (
-            <CategoryCard
-              key={idx}
-              title={category?.name}
-              image={`${getBaseUrl()}${category.imageUrl}`}
-              link="/product"
-            />
-          ))}
-        </div>
-      </div>
+// Dynamically import the client component
+const CategoryContent = dynamic(() => import('./CategoryContent'), {
+  ssr: false,
+  loading: () => (
+    <div className="min-h-screen flex justify-center items-center">
+      <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
     </div>
-  );
-};
+  )
+});
 
-export default AllCategory;
+export default function CategoryPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex justify-center items-center">
+        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    }>
+      <CategoryContent />
+    </Suspense>
+  );
+}
