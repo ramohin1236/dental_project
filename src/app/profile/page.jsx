@@ -3,11 +3,17 @@ import AddressSection from "@/components/profile/AddressSection";
 import ProfileCard from "@/components/profile/ProfileCard";
 import BreadCrumb from "@/components/shared/BreadCrumb";
 import { useFetchUserAddressesByIdQuery } from "@/redux/feature/address/addressApi";
-import React from "react";
+import React, { Suspense } from "react";
 import { useSelector } from "react-redux";
 import { useGetMyProfileQuery } from "@/redux/feature/users/usersApi";
 
-export default function Profile() {
+// Create a client component that uses useSearchParams
+function ProfileContent() {
+  // This component will be rendered on the client side
+  return <ProfileImpl />;
+}
+
+function ProfileImpl() {
   const handleChangePassword = () => {
     console.log("Change password clicked");
   };
