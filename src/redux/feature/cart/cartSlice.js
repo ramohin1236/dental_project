@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import Swal from "sweetalert2";
+
 
 const initialState = JSON.parse(localStorage?.getItem("cart")) || {
   products: [],
@@ -29,11 +29,11 @@ export const cartSlice = createSlice({
       const isExist = state.products.find((product) => product._id === action.payload._id);
       if (!isExist) {
         state.products.push({ ...action.payload, quantity: action.payload.quantity || 1, selected: true });
-        Swal.fire("Added!", "Product added to cart", "success");
+     
       } else {
         const addQty = action.payload.quantity || 1;
         isExist.quantity = (isExist.quantity || 0) + addQty;
-        Swal.fire("Updated!", "Product quantity updated in cart", "success");
+        
       }
       const totals = calculateCartTotals(state.products);
       Object.assign(state, totals);

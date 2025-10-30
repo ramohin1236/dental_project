@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState } from "react";
 import { IoEyeOffOutline, IoEyeOutline, IoClose } from "react-icons/io5";
 import Swal from "sweetalert2";
@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useLoginUserMutation } from "@/redux/feature/auth/authApi";
 import Link from "next/link";
 import { setUser } from "@/redux/feature/auth/authSlice";
+import { toast } from "sonner";
 
 export default function LogIn() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -31,27 +32,30 @@ export default function LogIn() {
       const decodedUser = jwtDecode(accessToken);
       console.log("Decoded User:", decodedUser);
 
-
       dispatch(setUser({ user: decodedUser, token: accessToken }));
 
-      Swal.fire({
-        title: "Login Successful!",
-        icon: "success",
+      toast.success("Login successful!", {
+        style: {
+          background: "#dcfce7",
+          color: "#166534",
+          border: "1px solid #bbf7d0",
+        },
       });
 
       router.push("/");
     } catch (error) {
-      console.log("Login failed!", error);
-      Swal.fire({
-        title: "Login Failed!",
-        icon: "error",
-        text: error?.data?.message || "Something went wrong",
+      toast.error(error?.data?.message || "Something went wrong", {
+        style: {
+          background: "#fef2f2",
+          color: "#dc2626",
+          border: "1px solid #fecaca",
+        },
       });
     }
   };
 
-const user = useSelector((state) => state?.auth?.user);
-console.log("usr",user)
+  const user = useSelector((state) => state?.auth?.user);
+  console.log("usr", user);
 
   return (
     <div className="flex min-h-screen bg-white">

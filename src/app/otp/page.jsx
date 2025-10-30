@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 import { useState, useEffect } from "react";
 import { IoClose } from "react-icons/io5";
+import { toast } from "sonner";
 
 export default function Otp() {
   const [code, setCode] = useState(new Array(6).fill(""));
@@ -28,7 +29,10 @@ export default function Otp() {
       return;
     }
     try {
-      const savedEmail = typeof window !== 'undefined' ? localStorage.getItem("forgotPasswordEmail") : null;
+      const savedEmail =
+        typeof window !== "undefined"
+          ? localStorage.getItem("forgotPasswordEmail")
+          : null;
       if (savedEmail) {
         setEmail(savedEmail);
         console.log("Email from localStorage (fallback):", savedEmail);
@@ -80,7 +84,14 @@ export default function Otp() {
         code: otpCode,
       }).unwrap();
 
-      console.log("✅ OTP verified successfully:", result);
+      // console.log("OTP verified successfully:", result);
+      toast.success("OTP verified successfully!", {
+        style: {
+          background: "#dcfce7",
+          color: "#166534",
+          border: "1px solid #bbf7d0",
+        },
+      });
 
       if (result.statusCode === 200) {
         console.log(" Email verified successfully");
@@ -104,7 +115,14 @@ export default function Otp() {
         navigate.push("/sign_in");
       } else {
         console.log(" Unexpected response:", result);
-        alert(result.message || "Verification failed");
+        toast.error(result.message || "Something went wrong", {
+          style: {
+            background: "#fef2f2",
+            color: "#dc2626",
+            border: "1px solid #fecaca",
+          },
+        });
+        // alert(result.message || "Verification failed");
       }
     } catch (err) {
       console.error(" Failed to verify OTP:", err);
@@ -114,7 +132,13 @@ export default function Otp() {
         err?.data?.message ||
         err?.error ||
         "Verification failed. Please try again.";
-      alert(errorMessage);
+      toast.error(errorMessage, {
+        style: {
+            background: "#fef2f2",
+            color: "#dc2626",
+            border: "1px solid #fecaca",
+          },
+        });
     }
   };
 
@@ -208,22 +232,15 @@ export default function Otp() {
               {isLoading ? "Verifying..." : "Verify Code"}
             </button>
 
-            <button
+            {/* <button
               type="button"
               disabled={isResending || !email}
               onClick={handleResend}
               className="w-full mt-3 border border-[#136BFB] text-[#136BFB] text-lg font-bold py-3 px-4 rounded-lg transition hover:bg-[#0f5ed11a] disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isResending ? "Resending..." : "Resend Code"}
-            </button>
+            </button> */}
           </form>
-
-          {process.env.NODE_ENV === "development" && (
-            <div className="mt-6 p-3 bg-gray-800 rounded text-xs text-gray-400">
-              <p>Debug: Email - {email || "Not found"}</p>
-              <p>OTP: {code.join("")}</p>
-            </div>
-          )}
         </div>
       </div>
 

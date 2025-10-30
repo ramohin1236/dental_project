@@ -5,8 +5,9 @@ import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
 
 import { addToCart } from "@/redux/feature/cart/cartSlice";
-import { useAddToCartMutation } from "@/redux/feature/cart/cartApi"; 
+import { useAddToCartMutation } from "@/redux/feature/cart/cartApi";
 import Swal from "sweetalert2";
+import { toast } from "sonner";
 
 const HotSellingCard = ({ product, image, title, description, id }) => {
   const router = useRouter();
@@ -25,35 +26,51 @@ const HotSellingCard = ({ product, image, title, description, id }) => {
         return;
       }
 
-      
       const res = await addToCartApi({
         productId: product._id,
         quantity: 1,
       }).unwrap();
 
-      
       if (res?.statusCode === 200) {
-        dispatch(addToCart({
-          _id: product._id,
-          name: product.name,
-          price: product.price,
-          image: product.images?.[0],
-          quantity: 1,
-          selected: true
-        }));
-        
-        Swal.fire("Success!", "Product added to cart", "success");
-      }
+        dispatch(
+          addToCart({
+            _id: product._id,
+            name: product.name,
+            price: product.price,
+            image: product.images?.[0],
+            quantity: 1,
+            selected: true,
+          })
+        );
 
+        toast.success("Added to cart successfully.", {
+          style: {
+            background: "#dcfce7",
+            color: "#166534",
+            border: "1px solid #bbf7d0",
+          },
+        });
+      }
     } catch (error) {
       console.error("Add to cart error:", error);
-      
-      
+
       if (error?.status === 401) {
-        Swal.fire("Login Required!", "Please login to add items to cart", "error");
+        toast.error(text, {
+          style: {
+            background: "#fef2f2",
+            color: "#dc2626",
+            border: "1px solid #fecaca",
+          },
+        });
         router.push("/sign_in");
       } else {
-        Swal.fire("Error!", error?.data?.message || "Failed to add product to cart", "error");
+        toast.error(text, {
+          style: {
+            background: "#fef2f2",
+            color: "#dc2626",
+            border: "1px solid #fecaca",
+          },
+        });
       }
     }
   };
@@ -62,9 +79,13 @@ const HotSellingCard = ({ product, image, title, description, id }) => {
     router.push("/favourite");
   };
 
-  const productImage = image || product?.images?.[0] || "https://placehold.co/300x300/171717/ffffff?text=No+Image";
+  const productImage =
+    image ||
+    product?.images?.[0] ||
+    "https://placehold.co/300x300/171717/ffffff?text=No+Image";
   const productTitle = title || product?.name || "Default Title";
-  const productDescription = description || product?.description || "Default Description";
+  const productDescription =
+    description || product?.description || "Default Description";
   const productId = id || product?._id;
 
   return (
@@ -76,7 +97,8 @@ const HotSellingCard = ({ product, image, title, description, id }) => {
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           onError={(e) => {
             e.target.onerror = null;
-            e.target.src = 'https://placehold.co/300x300/171717/ffffff?text=No+Image';
+            e.target.src =
+              "https://placehold.co/300x300/171717/ffffff?text=No+Image";
           }}
         />
         <div className="absolute top-2 right-2">
@@ -90,7 +112,9 @@ const HotSellingCard = ({ product, image, title, description, id }) => {
       </div>
 
       <div className="flex flex-col gap-3 mt-4 flex-1 group-hover:text-white">
-        <p className="text-white text-base sm:text-lg font-semibold line-clamp-2 min-h-[2.5rem] sm:min-h-[2.75rem] group-hover:text-[#136BFB] transition-colors">{productTitle}</p>
+        <p className="text-white text-base sm:text-lg font-semibold line-clamp-2 min-h-[2.5rem] sm:min-h-[2.75rem] group-hover:text-[#136BFB] transition-colors">
+          {productTitle}
+        </p>
         <p className="text-gray-400 text-xs sm:text-sm line-clamp-2 min-h-[2.5rem]">
           {productDescription}
         </p>
@@ -106,11 +130,19 @@ const HotSellingCard = ({ product, image, title, description, id }) => {
             disabled={isLoading}
             aria-busy={isLoading}
             className={`flex-1 min-w-0 px-3 py-2 md:px-3 md:py-2 lg:px-3 lg:py-2 rounded-md text-white border transition-colors text-sm md:text-sm lg:text-base truncate flex items-center justify-center gap-2 ${
-              isLoading ? 'bg-blue-700 border-blue-700 opacity-80 cursor-not-allowed' : 'bg-[#136BFB] border-[#136BFB] hover:bg-blue-700'
+              isLoading
+                ? "bg-blue-700 border-blue-700 opacity-80 cursor-not-allowed"
+                : "bg-[#136BFB] border-[#136BFB] hover:bg-blue-700"
             }`}
           >
             {isLoading && (
-              <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                className="w-4 h-4 animate-spin"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M21 12a9 9 0 1 1-6.219-8.56" />
               </svg>
             )}

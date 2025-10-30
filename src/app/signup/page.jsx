@@ -7,7 +7,7 @@ import { useRegisterUserMutation } from "@/redux/feature/auth/authApi";
 import Link from "next/link";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
-
+import { toast } from "sonner";
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -20,7 +20,7 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const router = useRouter()
+  const router = useRouter();
   const [registerUser, { isLoading, error }] = useRegisterUserMutation();
 
   const handleChange = (e) => {
@@ -58,7 +58,6 @@ export default function SignUp() {
       data.append("email", formData.email);
       data.append("password", formData.password);
 
-
       if (formData.gdcNo) {
         data.append("gdcNo", formData.gdcNo);
       }
@@ -69,19 +68,22 @@ export default function SignUp() {
 
       const res = await registerUser(data).unwrap();
 
-      Swal.fire({
-        icon: "success",
-        title: "Signup Successful!",
-        text: "Welcome aboard!",
+      toast.success("Otp sent to your email!", {
+        style: {
+          background: "#dcfce7",
+          color: "#166534",
+          border: "1px solid #bbf7d0",
+        },
       });
 
       router.push(`/otp?email=${encodeURIComponent(formData.email)}`);
     } catch (err) {
-      console.error("Signup failed:", err);
-      Swal.fire({
-        icon: "error",
-        title: "Signup Failed",
-        text: err?.data?.message || "Something went wrong",
+      toast.error(err?.data?.message || "Something went wrong", {
+        style: {
+          background: "#fef2f2",
+          color: "#dc2626",
+          border: "1px solid #fecaca",
+        },
       });
     }
   };
