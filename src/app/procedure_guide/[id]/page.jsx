@@ -1,11 +1,11 @@
 "use client"
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { FaCheck } from "react-icons/fa";
 import { PiShoppingCartBold } from "react-icons/pi";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useFetchProcedureByIdQuery } from "@/redux/feature/procedure/procedure";
-import { useAddToCartMutation } from "@/redux/feature/cart/cartApi"; // Add to cart API
-import { addToCart } from "@/redux/feature/cart/cartSlice"; // Redux action
+import { useAddToCartMutation } from "@/redux/feature/cart/cartApi";
+import { addToCart } from "@/redux/feature/cart/cartSlice";
 import BreadCrumb from "@/components/shared/BreadCrumb";
 import { getBaseUrl } from "@/utils/getBaseUrl";
 import ProductCard from "@/components/procedure/ProductCard";
@@ -13,12 +13,24 @@ import { useDispatch, useSelector } from "react-redux";
 import Swal from "sweetalert2";
 import { useFetchAllProductsQuery } from "@/redux/feature/products/productsApi";
 
-export default function ProcedureDetails() {
+// Wrap the component that uses useParams in a separate component
+function ProcedureDetailsContent() {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const id = params?.id;
+  
+  if (!id) {
+    return <div>Loading...</div>;
+  }
+
+  return <ProcedureDetailsImpl id={id} searchParams={searchParams} />;
+}
+
+function ProcedureDetailsImpl({ id, searchParams }) {
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [selectAll, setSelectAll] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   
-  const { id } = useParams();
   const dispatch = useDispatch();
   const user = useSelector((state) => state?.auth?.user);
 

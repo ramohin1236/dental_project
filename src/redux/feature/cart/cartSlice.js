@@ -1,16 +1,45 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+// Helper function to safely get initial cart state
+const getInitialCartState = () => {
+  if (typeof window === 'undefined') {
+    return {
+      products: [],
+      selectedItems: 0,
+      totalPrice: 0,
+      selectedSubtotal: 0,
+    };
+  }
 
-const initialState = JSON.parse(localStorage?.getItem("cart")) || {
-  products: [],
-  selectedItems: 0,
-  totalPrice: 0,
-  selectedSubtotal: 0,
+  try {
+    const savedCart = localStorage.getItem("cart");
+    return savedCart ? JSON.parse(savedCart) : {
+      products: [],
+      selectedItems: 0,
+      totalPrice: 0,
+      selectedSubtotal: 0,
+    };
+  } catch (error) {
+    console.error('Error loading cart from localStorage:', error);
+    return {
+      products: [],
+      selectedItems: 0,
+      totalPrice: 0,
+      selectedSubtotal: 0,
+    };
+  }
 };
 
 const saveCart = (state) => {
-  localStorage.setItem("cart", JSON.stringify(state));
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem("cart", JSON.stringify(state));
+  } catch (error) {
+    console.error('Error saving cart to localStorage:', error);
+  }
 };
+
+const initialState = getInitialCartState();
 
 const calculateCartTotals = (products) => {
   const selectedItems = products.reduce((total, product) => total + (product.quantity || 0), 0);
