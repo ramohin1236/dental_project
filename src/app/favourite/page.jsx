@@ -1,11 +1,11 @@
-"use client"
+"use client";
+import { Suspense } from 'react';
 import BreadCrumb from "@/components/shared/BreadCrumb";
 import HotSellingCard from "@/components/shared/HotSellingCard";
-import React from "react";
 import { CiSearch } from "react-icons/ci";
 
-
-const Favorite = () => {
+// Client component that contains the actual implementation
+function FavoriteContent() {
   const products = [
     {
       title: "Penora 200",
@@ -81,4 +81,15 @@ const Favorite = () => {
   );
 };
 
-export default Favorite;
+// Main page component with Suspense boundary
+export default function Favorite() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[#171717]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    }>
+      <FavoriteContent />
+    </Suspense>
+  );
+}

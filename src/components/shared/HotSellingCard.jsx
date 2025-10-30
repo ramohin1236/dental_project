@@ -1,15 +1,15 @@
 "use client";
-import React from "react";
+import React, { Suspense } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useDispatch, useSelector } from "react-redux";
-
 import { addToCart } from "@/redux/feature/cart/cartSlice";
 import { useAddToCartMutation } from "@/redux/feature/cart/cartApi";
 import Swal from "sweetalert2";
 import { toast } from "sonner";
 
-const HotSellingCard = ({ product, image, title, description, id }) => {
+// Client component that contains the actual implementation
+function HotSellingCardContent({ product, image, title, description, id }) {
   const router = useRouter();
   const dispatch = useDispatch();
   const user = useSelector((state) => state?.auth?.user);
@@ -154,4 +154,24 @@ const HotSellingCard = ({ product, image, title, description, id }) => {
   );
 };
 
-export default HotSellingCard;
+// Main component with Suspense boundary
+export default function HotSellingCard(props) {
+  return (
+    <Suspense fallback={
+      <div className="w-full max-w-sm bg-[#1c1c1c] rounded-lg shadow-md overflow-hidden h-80 flex items-center justify-center">
+        <div className="animate-pulse">
+          <div className="h-48 bg-gray-700 rounded w-full"></div>
+          <div className="p-4 space-y-2">
+            <div className="h-4 bg-gray-700 rounded w-3/4"></div>
+            <div className="h-3 bg-gray-700 rounded w-full"></div>
+            <div className="h-3 bg-gray-700 rounded w-5/6"></div>
+          </div>
+        </div>
+      </div>
+    }>
+      <HotSellingCardContent {...props} />
+    </Suspense>
+  );
+}
+
+export { HotSellingCardContent };
