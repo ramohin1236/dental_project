@@ -29,8 +29,12 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ReduxProvider>
-          <TopProgress />
-          <Navbar />
+          <Suspense fallback={null}>
+            <TopProgress />
+          </Suspense>
+          <Suspense fallback={null}>
+            <Navbar />
+          </Suspense>
           <div className="min-h-screen">
             <Suspense fallback={
               <div className="min-h-screen flex items-center justify-center">
