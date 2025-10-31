@@ -418,21 +418,21 @@ export default function Navbar() {
               <Link
                 href="/product"
                 className="text-white hover:text-gray-300 transition-colors"
-                onClick={toggleMenu}
+                onClick={() => setIsMenuOpen(false)}
               >
                 Product
               </Link>
               <Link
                 href="/allcategory"
                 className="text-white hover:text-gray-300 transition-colors"
-                onClick={toggleMenu}
+                onClick={() => setIsMenuOpen(false)}
               >
                 Category
               </Link>
               <Link
-                href="/procedure-guide"
+                href="/procedure_guide"
                 className="text-white hover:text-gray-300 transition-colors"
-                onClick={toggleMenu}
+                onClick={() => setIsMenuOpen(false)}
               >
                 Procedure Guide
               </Link>
@@ -456,8 +456,8 @@ export default function Navbar() {
               <div className="flex flex-col space-y-4">
                 <button
                   onClick={() => {
-                    navigate("/sign_in");
-                    toggleMenu();
+                    navigate.push('/sign_in');
+                    setIsMenuOpen(false);
                   }}
                   className="cursor-pointer w-full flex items-center justify-center space-x-2 px-4 py-3 border border-[#136BFB] text-[#136BFB] rounded-lg"
                 >
@@ -466,8 +466,8 @@ export default function Navbar() {
                 </button>
                 <button
                   onClick={() => {
-                    navigate("/signup");
-                    toggleMenu();
+                    navigate.push('/signup');
+                    setIsMenuOpen(false);
                   }}
                   className="cursor-pointer w-full flex items-center justify-center space-x-2 px-4 py-3 bg-[#136BFB] text-white rounded-lg"
                 >
@@ -476,8 +476,8 @@ export default function Navbar() {
                 </button>
                 <button
                   onClick={() => {
-                    navigate("/shopping-cart");
-                    toggleMenu();
+                    navigate.push('/my_cart');
+                    setIsMenuOpen(false);
                   }}
                   className="cursor-pointer w-full flex items-center justify-center space-x-2 px-4 py-3 border border-[#136BFB] text-[#136BFB] rounded-lg"
                 >
