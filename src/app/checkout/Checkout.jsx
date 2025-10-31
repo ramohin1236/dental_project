@@ -27,6 +27,8 @@ export default function Checkout() {
 
     const cart = useSelector(state => state.cart || {})
     const selectedProducts = cart.products?.filter(p => p.selected) || []
+
+    console.log("kjlsdaaaaakkkkkkkkkk",selectedProducts)
     
     const subtotal = selectedProducts.reduce((total, product) => {
         return total + (product.price * product.quantity)
@@ -71,6 +73,7 @@ export default function Checkout() {
             const res = await createOrder(payload).unwrap()
             try { dispatch(clearCartLocal()); } catch {}
             const paymentUrl = res?.data?.payment?.url
+            console.log("Payment URL:", paymentUrl);
             if (paymentUrl) {
                 window.location.href = paymentUrl
                 return

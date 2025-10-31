@@ -10,7 +10,6 @@ export default function CheckoutSuccessContent() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    // Ensure cart is cleared; harmless if already cleared
     try { 
       dispatch(clearCartLocal()); 
     } catch (error) {
@@ -18,12 +17,10 @@ export default function CheckoutSuccessContent() {
     }
 
     const orderId = searchParams.get("orderId");
-    // Redirect to congratulations, optionally pass orderId
     const target = orderId 
       ? `/congratulations?orderId=${encodeURIComponent(orderId)}` 
       : "/congratulations";
     
-    // Small delay to show loading state
     const timer = setTimeout(() => {
       router.replace(target);
     }, 1000);

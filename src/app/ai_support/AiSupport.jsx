@@ -26,8 +26,8 @@ export default function AiSupport() {
   const user = useSelector((state) => state?.auth?.user);
   console.log("UUUSSSEEERRR",user)
   const userImage = user?.image
-    ? `${getBaseUrl()}${user.image}`
-    : "/default-avatar.png";
+  ? `${getBaseUrl()}${user.image}`
+  : "/image.png";
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

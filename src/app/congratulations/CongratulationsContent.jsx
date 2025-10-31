@@ -15,7 +15,7 @@ export default function CongratulationsContent() {
     if (orderId) {
       setMessage(`Your order #${orderId} has been placed successfully! We'll send you an email with the order details.`);
       setButtonText("View Order");
-      setButtonLink(`/profile/orders/${orderId}`);
+      setButtonLink("/my_order");
     }
   }, [searchParams]);
 

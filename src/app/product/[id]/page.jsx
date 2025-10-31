@@ -31,7 +31,7 @@ const ProductDetails = () => {
 
   const { data, isLoading, isError } = useFetchProductbyIdQuery(id);
   const product = data?.data;
-  console.log(product);
+ 
   const user = useSelector((state) => state?.auth?.user);
   const IsLogin = !!user;
   const isInCart = (() => {

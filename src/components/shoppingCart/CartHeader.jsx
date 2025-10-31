@@ -11,8 +11,8 @@ const CartHeader = ({
     return (
         <div className="flex items-center justify-between mb-5 bg-neutral-700 rounded-lg p-2">
             <div className="flex items-center gap-3">
-                <Checkbox isSelected={allSelected} onSelect={onSelectAll} />
-                <span className="text-gray-300 font-medium">Select all</span>
+                {/* <Checkbox isSelected={allSelected} onSelect={onSelectAll} /> */}
+                <span className="text-gray-300 font-medium">Delete all</span>
             </div>
 
             <button

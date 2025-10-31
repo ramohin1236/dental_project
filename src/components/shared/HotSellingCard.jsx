@@ -13,6 +13,7 @@ export default function HotSellingCard({ product, image, title, description, id 
   const dispatch = useDispatch();
   const user = useSelector((state) => state?.auth?.user);
   const [addToCartApi, { isLoading }] = useAddToCartMutation();
+  console.log("product id --->", product?.productId)
 
   const handleAddToCart = async () => {
     try {
@@ -85,7 +86,7 @@ export default function HotSellingCard({ product, image, title, description, id 
   const productTitle = title || product?.name || "Default Title";
   const productDescription =
     description || product?.description || "Default Description";
-  const productId = id || product?._id;
+  const productId = id || product?.productId || product?._id;
 
   return (
     <div className="bg-[#1E1E1E] rounded-lg p-4 shadow-lg flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:shadow-[#136BFB]/20 hover:-translate-y-1">
@@ -118,12 +119,21 @@ export default function HotSellingCard({ product, image, title, description, id 
           {productDescription}
         </p>
         <div className="mt-auto flex flex-col md:flex-row items-stretch md:items-center gap-2">
-          <Link
-            href={`/product/${productId}`}
-            className="flex-1 min-w-0 px-3 py-2 md:px-3 md:py-2 lg:px-3 lg:py-2 rounded-md text-[#136BFB] border border-[#136BFB] cursor-pointer hover:bg-[#136BFB] hover:text-white transition-colors text-sm md:text-sm lg:text-base text-center truncate"
-          >
-            View Details
-          </Link>
+          {productId ? (
+            <Link
+              href={`/product/${productId}`}
+              className="flex-1 min-w-0 px-3 py-2 md:px-3 md:py-2 lg:px-3 lg:py-2 rounded-md text-[#136BFB] border border-[#136BFB] cursor-pointer hover:bg-[#136BFB] hover:text-white transition-colors text-sm md:text-sm lg:text-base text-center truncate"
+            >
+              View Details
+            </Link>
+          ) : (
+            <button
+              className="flex-1 min-w-0 px-3 py-2 md:px-3 md:py-2 lg:px-3 lg:py-2 rounded-md text-gray-400 border border-gray-600 cursor-not-allowed text-sm md:text-sm lg:text-base text-center truncate"
+              disabled
+            >
+              View Details
+            </button>
+          )}
           <button
             onClick={handleAddToCart}
             disabled={isLoading}

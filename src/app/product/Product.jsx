@@ -43,6 +43,7 @@ export default function Product() {
   });
 
   const products = data?.data || [];
+  console.log("products page theke products------->",products)
   const viewProducts = term
     ? products.filter((p) =>
         (p?.name || '').toLowerCase().includes(term) ||

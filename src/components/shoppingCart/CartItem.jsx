@@ -88,7 +88,7 @@ const CartItem = ({
         {/* Checkbox and Image */}
         <div className="flex items-start w-full sm:w-auto">
           <div className="flex-shrink-0 mt-1">
-            <Checkbox isSelected={isSelected} onSelect={handleToggle} />
+            {/* <Checkbox isSelected={isSelected} onSelect={handleToggle} /> */}
           </div>
           <div className="flex-shrink-0 ml-3">
             <img

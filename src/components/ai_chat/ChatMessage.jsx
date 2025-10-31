@@ -30,7 +30,12 @@ const ChatMessage = ({ message, isBot, timestamp, avatar }) => {
         <div className="flex-shrink-0">
           <div className="w-12 h-12 rounded-full overflow-hidden bg-neutral-600 flex items-center justify-center">
             {avatar ? (
-              <img src={avatar} alt="User" className="w-full h-full object-cover" />
+              <img 
+                src={avatar} 
+                alt="User" 
+                className="w-full h-full object-cover" 
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/image.png'; }}
+              />
             ) : (
               <FaRegUser  className="w-6 h-6 text-gray-300" />
             )}
