@@ -17,6 +17,7 @@ import { getBaseUrl } from "@/utils/getBaseUrl";
 import { useRouter } from "next/navigation";
 import React, { useState, useMemo, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { selectAll as selectAllAction, toggleSelect as toggleSelectAction } from "@/redux/feature/cart/cartSlice";
 
 const ShoppingCart = () => {
   const dispatch = useDispatch();
@@ -111,6 +112,10 @@ const ShoppingCart = () => {
 
   const handleToggleSelect = (cartItemId) => {
     setSelectedMap((prev) => ({ ...prev, [cartItemId]: !prev[cartItemId] }));
+    const product = products.find((p) => p.cartItemId === cartItemId);
+    if (product?._id) {
+      dispatch(toggleSelectAction({ id: product._id }));
+    }
   };
 
   const handleSelectAll = () => {
@@ -120,6 +125,7 @@ const ShoppingCart = () => {
       next[p.cartItemId] = flag;
     });
     setSelectedMap(next);
+    dispatch(selectAllAction({ selected: flag }));
   };
 
   const handleUpdateQuantity = async (cartItemId, type) => {
@@ -243,6 +249,13 @@ const ShoppingCart = () => {
       alert("Please select at least one product to checkout");
       return;
     }
+    // Sync Redux selection with current UI before navigating
+    dispatch(selectAllAction({ selected: false }));
+    products.forEach((p) => {
+      if (selectedMap[p.cartItemId] && p?._id) {
+        dispatch(toggleSelectAction({ id: p._id }));
+      }
+    });
     navigate.push("/checkout");
   };
 

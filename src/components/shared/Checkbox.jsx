@@ -1,9 +1,15 @@
 
 import React from "react";
 
-export default function Checkbox({ isSelected }) {
+export default function Checkbox({ isSelected, onSelect }) {
     return (
-        <div className="relative">
+        <button
+            type="button"
+            onClick={onSelect}
+            className="relative select-none"
+            aria-pressed={!!isSelected}
+            aria-label={isSelected ? "Unselect" : "Select"}
+        >
             <div
                 className={`w-5 h-5 rounded border-2 transition-all duration-200 flex items-center justify-center ${
                     isSelected
@@ -30,6 +36,6 @@ export default function Checkbox({ isSelected }) {
                     </svg>
                 )}
             </div>
-        </div>
+        </button>
     );
 }
