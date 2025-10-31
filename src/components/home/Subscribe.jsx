@@ -1,6 +1,6 @@
 "use client";
 import { useSubscribeNewsletterMutation } from "@/redux/feature/newsletter/newsletterApi";
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { toast } from "sonner";
 
 export default function Subscribe() {
@@ -64,7 +64,8 @@ export default function Subscribe() {
   };
 
   return (
-    <div className="relative bg-[#171716] rounded-xl p-8 md:p-20 mx-auto w-full">
+    <Suspense fallback={<div>Loading...</div>}>
+      <div className="relative bg-[#171716] rounded-xl p-8 md:p-20 mx-auto w-full">
       <div className="absolute bottom-0 right-0 pointer-events-none">
         <div className="w-[500px] h-[500px] bg-[#136BFB] opacity-20 blur-3xl rounded-full"></div>
       </div>
@@ -104,5 +105,6 @@ export default function Subscribe() {
         </form>
       </div>
     </div>
+    </Suspense>
   );
 }

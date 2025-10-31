@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { Suspense } from "react";
 import { useRouter } from "next/navigation";
 import CategoryCard from "../shared/CategoryCard";
 import SectionHeading from "../shared/SectionHeading";
@@ -12,7 +12,8 @@ const ExploreByCategory = () => {
   const router = useRouter();
 
   return (
-    <div className="mb-10">
+ <Suspense fallback={<div>Loading...</div>}>
+     <div className="mb-10">
       <SectionHeading
         onButtonClick={() => {
           router.push("/allcategory");
@@ -31,6 +32,7 @@ const ExploreByCategory = () => {
         ))}
       </div>
     </div>
+ </Suspense>
   );
 };
 

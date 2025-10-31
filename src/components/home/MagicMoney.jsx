@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import SaveOverTime from './SaveOverTime';
 
 export default function MagicMoney() {
   return (
-    <div className="w-full bg-[#171716] min-h-screen relative">
+   <Suspense fallback={<div>Loading...</div>}>
+     <div className="w-full bg-[#171716] min-h-screen relative">
       {/* Blue shadow/glow effect at center */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="w-[500px] h-[800px] bg-[#136BFB] opacity-20 blur-3xl rounded-full"></div>
@@ -149,5 +150,6 @@ export default function MagicMoney() {
       </div>
     </div>
     </div>
+   </Suspense>
   );
 };

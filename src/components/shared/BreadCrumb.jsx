@@ -1,10 +1,9 @@
 "use client";
 import Link from "next/link";
-import React, { Suspense } from "react";
+import React from "react";
 import { FaAngleRight } from "react-icons/fa";
 
-// Client component that uses useSearchParams
-function BreadCrumbContent({ name, title }) {
+export default function BreadCrumb({ name, title }) {
   return (
     <ul className="flex items-center justify-start font-[sans-serif] py-5 gap-2">
       <li className="relative group">
@@ -24,18 +23,5 @@ function BreadCrumbContent({ name, title }) {
         <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
       </li>
     </ul>
-  );
-}
-
-// Main component with Suspense boundary
-export default function BreadCrumb({ name, title }) {
-  return (
-    <Suspense fallback={
-      <div className="flex items-center justify-start font-[sans-serif] py-5 gap-2">
-        <span className="text-[#9F9C96] text-sm">Loading...</span>
-      </div>
-    }>
-      <BreadCrumbContent name={name} title={title} />
-    </Suspense>
   );
 }

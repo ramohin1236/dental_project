@@ -1,7 +1,7 @@
 "use client"
 import { useFetchAllSlidersQuery } from "@/redux/feature/slider/sliderApi";
 import { getBaseUrl } from "@/utils/getBaseUrl";
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 
 
 export default function Slider({
@@ -66,7 +66,8 @@ export default function Slider({
   const heightClasses = getHeightClasses();
 
   return (
-    <div
+    <Suspense fallback={<div>Loading...</div>}>
+      <div
       className={`relative w-full ${heightClasses.container} ${className}`}
       style={{
         backgroundImage: backgroundImage ? `url("${backgroundImage}")` : "none",
@@ -171,5 +172,6 @@ export default function Slider({
         </div>
       )}
     </div>
+    </Suspense>
   );
 }

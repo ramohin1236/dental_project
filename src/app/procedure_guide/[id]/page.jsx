@@ -13,17 +13,17 @@ import { useDispatch, useSelector } from "react-redux";
 import Swal from "sweetalert2";
 import { useFetchAllProductsQuery } from "@/redux/feature/products/productsApi";
 
-// Wrap the component that uses useParams in a separate component
-function ProcedureDetailsContent() {
-  const params = useParams();
+// Separate component for useSearchParams
+function ProcedureDetailsWithSearchParams() {
   const searchParams = useSearchParams();
+  const params = useParams();
   const id = params?.id;
   
   if (!id) {
     return <div>Loading...</div>;
   }
 
-  return <ProcedureDetailsImpl id={id} searchParams={searchParams} />;
+  return (<Suspense> <ProcedureDetailsImpl id={id} searchParams={searchParams} /></Suspense>);
 }
 
 function ProcedureDetailsImpl({ id, searchParams }) {
@@ -137,7 +137,8 @@ function ProcedureDetailsImpl({ id, searchParams }) {
   }
 
   return (
-    <div className="min-h-screen">
+   <Suspense fallback={<div>Loading...</div>}>
+     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-10">
         <div className="container mx-auto flex justify-start items-center">
           <BreadCrumb name="Procedure Guide" title={procedureDetails?.name || "Procedure"} />
@@ -246,5 +247,15 @@ function ProcedureDetailsImpl({ id, searchParams }) {
         )}
       </div>
     </div>
+   </Suspense>
+  );
+}
+
+// Main page component with Suspense
+export default function ProcedureGuidePage() {
+  return (
+    <Suspense fallback={<div>Loading procedure guide...</div>}>
+      <ProcedureDetailsWithSearchParams />
+    </Suspense>
   );
 }

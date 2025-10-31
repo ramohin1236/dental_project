@@ -7,7 +7,7 @@ import PageHeading from "@/components/shared/PageHeading";
 import { getBaseUrl } from "@/utils/getBaseUrl";
 import Link from "next/link";
 
-export default function ProcedureGuideContent() {
+export default function ProcedureGuide() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const { data: procedure, isLoading, error } = useFetchAllProcedureQuery({});

@@ -1,46 +1,17 @@
-"use client"
-import React from "react";
-import BlogCard from "@/components/shared/BlogCard";
-import SectionHeading from "@/components/shared/SectionHeading";
-import { useFetchAllBlogsQuery } from "@/redux/feature/blog/blogApi";
-import { getBaseUrl } from "@/utils/getBaseUrl";
+// app/blog/page.jsx
+"use client";
 
+import { Suspense } from "react";
+import BlogContent from "./BlogContent";
 
-
-const Blog = () => {
-
-
-  // const navigate = useNavigate();
-  const { data: blogs } = useFetchAllBlogsQuery({});
-
-
+export default function BlogPage() {
   return (
-    <div className="container text-white mx-auto">
-      <SectionHeading
-        showButton={false}
-        title="Insights & Innovations in Dental Care"
-      />
-
-      {/* cards */}
-      <div className="flex gap-5 flex-wrap space-y-5 px-5 md:px-0">
-        {blogs?.map((blog, idx) => (
-          <BlogCard
-            key={idx}
-            image={`${getBaseUrl()}${blog.imageUrl?.[0]}`}
-            id={blog?._id}
-            title={blog?.title}
-            description={blog?.description}
-            date={new Date(blog.createdAt).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-            blogId={blog.id}
-          />
-        ))}
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[#171717]">
+        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
-    </div>
+    }>
+      <BlogContent />
+    </Suspense>
   );
-};
-
-export default Blog;
+}

@@ -1,5 +1,7 @@
+// app/category/CategoryContent.jsx
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import BreadCrumb from "@/components/shared/BreadCrumb";
 import CategoryCard from "@/components/shared/CategoryCard";
 import SectionHeading from "@/components/shared/SectionHeading";
@@ -7,6 +9,8 @@ import { useFetchAllCategoriesQuery } from "@/redux/feature/category/CategoriesA
 import { getBaseUrl } from "@/utils/getBaseUrl";
 
 export default function CategoryContent() {
+ 
+
   const { data: categories, isLoading, error } = useFetchAllCategoriesQuery({});
 
   if (isLoading) {

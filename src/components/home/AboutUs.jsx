@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import SectionHeading from '../shared/SectionHeading'
 
 export default function AboutUs() {
   return (
-    <div className="relative bg-[#171716]">
+   <Suspense fallback={<div>Loading...</div>}>
+     <div className="relative bg-[#171716]">
       {/* Blue shadow/glow effect at top-left corner */}
       <div className="absolute top-0 left-0">
         <div className="w-[500px] h-[500px] bg-[#136BFB] opacity-20 blur-3xl rounded-full"></div>
@@ -74,5 +75,6 @@ export default function AboutUs() {
         </div>
       </div>
     </div>
+   </Suspense>
   )
 }

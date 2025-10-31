@@ -1,5 +1,5 @@
 import BreadCrumb from '@/components/shared/BreadCrumb';
-import React from 'react';
+import React, { Suspense } from 'react';
 
 
 
@@ -26,7 +26,12 @@ const OrderDetails = ({
     };
 
     return (
-        <div className='py-10'>
+      <Suspense fallback={
+        <div className="min-h-screen flex justify-center items-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      }>
+          <div className='py-10'>
             <div className='my-5 container mx-auto'>
                 <BreadCrumb
                     title="Order Details"
@@ -121,6 +126,7 @@ const OrderDetails = ({
                 </div>
             </div>
         </div>
+      </Suspense>
     );
 };
 

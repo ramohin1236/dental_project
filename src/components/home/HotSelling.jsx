@@ -1,6 +1,6 @@
 // HotSelling.js - SIMPLE VERSION
 "use client";
-import React from "react";
+import React, { Suspense } from "react";
 import HotSellingCard from "@/components/shared/HotSellingCard";
 import SectionHeading from "@/components/shared/SectionHeading";
 import { useFetchAllHotSellingQuery } from "@/redux/feature/hotSellingApi/HotSellingApi";
@@ -12,11 +12,13 @@ const HotSelling = () => {
   const router = useRouter();
 
   return (
-    <div className="pb-10">
+    <Suspense fallback={<div>Loading...</div>}>
+      <div className="pb-10">
       <SectionHeading
         title="Hot Selling"
         buttonText="View All"
         onButtonClick={() => router.push("/hot-selling")}
+        
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5 container mx-auto px-5 md:px-0">
@@ -32,6 +34,7 @@ const HotSelling = () => {
         ))}
       </div>
     </div>
+    </Suspense>
   );
 };
 

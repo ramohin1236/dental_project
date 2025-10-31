@@ -7,7 +7,7 @@ import { useFetchProductbyIdQuery } from "@/redux/feature/products/productsApi";
 import { getBaseUrl } from "@/utils/getBaseUrl";
 import { useParams,useRouter } from "next/navigation";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { FaTruck, FaUndo, FaMedal } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { useFetchAllProcedureQuery } from "@/redux/feature/procedure/procedure";
@@ -161,7 +161,8 @@ const ProductDetails = () => {
   };
 
   return (
-    <div className="mx-auto container text-white py-6 sm:py-8 md:py-10">
+    <Suspense fallback={<div>Loading...</div>}>
+      <div className="mx-auto container text-white py-6 sm:py-8 md:py-10">
       {/* Breadcrumb */}
       <div className="container mx-auto flex justify-start items-center px-2 sm:px-5">
         <BreadCrumb name="Home" title={product.name} />
@@ -367,6 +368,7 @@ const ProductDetails = () => {
         </p>
       </div>
     </div>
+    </Suspense>
   );
 };
 
