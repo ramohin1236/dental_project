@@ -20,11 +20,12 @@ export default function AiSupport() {
       }),
     },
   ]);
+  console.log("MESSAGES",messages)
 
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const user = useSelector((state) => state?.auth?.user);
-  console.log("UUUSSSEEERRR",user)
+  // console.log("UUUSSSEEERRR",user)
   const userImage = user?.image
   ? `${getBaseUrl()}${user.image}`
   : "/image.png";
@@ -70,12 +71,16 @@ export default function AiSupport() {
       }
 
       const data = await response.json();
+      console.log('API Response:', data);
 
+      // Create a message object that includes all the data
       const botMessage = {
         id: Date.now() + 1,
-        text:
-          data.response ||
-          "I'm sorry, I couldn't process your request. Please try again.",
+        text: JSON.stringify({
+          message: data.message || data.response || 'I found some information for you!',
+          link: data.link || [],
+          additional_message: data.additional_message || ''
+        }),
         isBot: true,
         timestamp: generateTimestamp(),
       };

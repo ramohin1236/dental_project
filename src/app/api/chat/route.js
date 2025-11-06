@@ -17,7 +17,19 @@ export async function POST(request) {
     }
 
     const data = await response.json();
-    return NextResponse.json(data);
+    
+    // Log the response from the external API
+    console.log('External API response:', data);
+    
+    // Format the response as per the required structure
+    const formattedResponse = {
+      message: data.message || 'I found the product you\'re looking for!',
+      link: data.link || [],
+      additional_message: data.additional_message || 'You can find more details in the links above.'
+    };
+    
+    console.log('Formatted response:', formattedResponse);
+    return NextResponse.json(formattedResponse);
   } catch (error) {
     console.error('Error in chat API:', error);
     return NextResponse.json(
