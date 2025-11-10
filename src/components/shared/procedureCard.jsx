@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import React from 'react';
 import { MdOutlineDateRange } from 'react-icons/md';
 
-const BlogCard = ({ id,image, title, description, date, blogId }) => {
+const procedureCard = ({ id,image, title, description, date, blogId }) => {
   const navigate = useRouter();
 
   const handleNavigate = () => {
@@ -12,7 +12,7 @@ const BlogCard = ({ id,image, title, description, date, blogId }) => {
 
   return (
     <Link
-      href={`/blog/${id}`}
+      href={`/procedure_guide/${id}`}
       className="border-[#6F6F6F] border-[1.5px] bg-[#1c1c1c] rounded-md overflow-hidden max-w-[365px] cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-[#136BFB]/20 hover:-translate-y-1"
     >
       <div className="overflow-hidden group">
@@ -39,4 +39,4 @@ const BlogCard = ({ id,image, title, description, date, blogId }) => {
   );
 };
 
-export default BlogCard;
+export default procedureCard;

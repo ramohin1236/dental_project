@@ -1,5 +1,5 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { getBaseUrl } from "@/utils/getBaseUrl";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const contactInfoApi = createApi({
   reducerPath: "contactInfoApi",

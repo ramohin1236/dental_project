@@ -62,7 +62,7 @@ export default function AllOrder() {
         || first?.product?.image
         || (Array.isArray(first?.product?.images) ? first.product.images[0] : "");
       if (img && !/^https?:\/\//i.test(img)) {
-        img = `${getBaseUrl()}${img}`;
+        img = `${img}`;
       }
       return {
         key: order._id || order.id || `#${idx + 1}`,
@@ -256,7 +256,7 @@ export default function AllOrder() {
                   <tbody>
                     {(Array.isArray(selectedOrder?.products) ? selectedOrder.products : []).map((p, i) => {
                       let img = p?.image || (Array.isArray(p?.images) ? p.images[0] : '') || p?.product?.image || (Array.isArray(p?.product?.images) ? p.product.images[0] : '');
-                      if (img && !/^https?:\/\//i.test(img)) img = `${getBaseUrl()}${img}`;
+                      if (img && !/^https?:\/\//i.test(img)) img = `${img}`;
                       const name = p?.name || p?.product?.name || '—';
                       const qty = Number(p?.quantity || 0);
                       const price = Number(p?.price ?? p?.product?.price ?? 0);

@@ -16,7 +16,7 @@ const procedureApi = createApi({
     }),
      fetchProcedureById: builder.query({
       query: (id) => `/${id}`,
-      providesTags: (result, error, id) => [{ type: "Products", id }],
+      providesTags: (result, error, id) => [{ type: "Procedure", id }],
     }),
   }),
 });

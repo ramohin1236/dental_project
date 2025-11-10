@@ -85,7 +85,6 @@ function ProcedureDetailsImpl({ id, searchParams }) {
         selectedItems.has(product._id)
       );
 
-      // প্রতিটি selected product এর জন্য add to cart call করুন
       const promises = selectedProducts.map(product => 
         addToCartApi({
           productId: product._id,
@@ -148,7 +147,7 @@ function ProcedureDetailsImpl({ id, searchParams }) {
         <div className="relative bg-white rounded-2xl shadow-sm overflow-hidden mb-8">
           <div className="aspect-w-16 aspect-h-9">
             <img
-              src={`${getBaseUrl()}${procedureDetails?.imageUrl}`}
+              src={`${procedureDetails?.imageUrl}`}
               alt="Endodontic procedure equipment"
               className="w-full h-80 object-cover"
             />
@@ -166,7 +165,7 @@ function ProcedureDetailsImpl({ id, searchParams }) {
         </div>
 
         {/* Select All Header */}
-        <div className="flex justify-between items-center mt-10">
+        {/* <div className="flex justify-between items-center mt-10">
           <h2 className="text-2xl font-bold text-white">
             Products ({products.length})
           </h2>
@@ -193,13 +192,13 @@ function ProcedureDetailsImpl({ id, searchParams }) {
               </div>
             </label>
           )}
-        </div>
+        </div> */}
         
         {/* Divider */}
-        <div className="border-b-2 border-gray-700 my-5"></div>
+        {/* <div className="border-b-2 border-gray-700 my-5"></div> */}
 
         {/* Product Grid */}
-        {products.length === 0 ? (
+        {/* {products.length === 0 ? (
           <div className="text-center py-10">
             <p className="text-gray-400 text-xl">No products found for this procedure</p>
           </div>
@@ -216,7 +215,6 @@ function ProcedureDetailsImpl({ id, searchParams }) {
               ))}
             </div>
 
-            {/* Add to Cart Button */}
             <div className="flex justify-center">
               <button
                 onClick={handleAddToCart}
@@ -244,7 +242,7 @@ function ProcedureDetailsImpl({ id, searchParams }) {
               </button>
             </div>
           </>
-        )}
+        )} */}
       </div>
     </div>
    </Suspense>

@@ -76,7 +76,7 @@ const CartItem = ({
     const first = product?.images?.[0];
     if (first) {
       const isAbsolute = /^https?:\/\//i.test(first);
-      return isAbsolute ? first : `${getBaseUrl()}${first}`;
+      return isAbsolute ? first : `${first}`;
     }
     if (product?.image) return product.image;
     return "/image/icons/noproduct.png";

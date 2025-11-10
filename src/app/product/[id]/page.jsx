@@ -42,7 +42,7 @@ const ProductDetails = () => {
 
   useEffect(() => {
     if (product && product.images && product.images.length > 0) {
-      setSelectedImage(`${getBaseUrl()}${product.images[0]}`);
+      setSelectedImage(`${product.images[0]}`);
     }
   }, [product]);
 
@@ -175,7 +175,7 @@ const ProductDetails = () => {
           {selectedImage && (
             <div
               onClick={() => setShowModal(true)}
-              className="rounded-md overflow-hidden w-full h-[250px] sm:h-[350px] md:h-[400px] lg:h-[450px] xl:h-[500px] cursor-pointer"
+              className="rounded-md overflow-hidden w-full  cursor-pointer"
             >
               <img
                 src={selectedImage}
@@ -191,11 +191,11 @@ const ProductDetails = () => {
               product.images.map((img, i) => (
                 <img
                   key={i}
-                  src={`${getBaseUrl()}${img}`}
+                  src={`${img}`}
                   alt={`thumb-${i}`}
-                  onClick={() => setSelectedImage(`${getBaseUrl()}${img}`)}
+                  onClick={() => setSelectedImage(`${img}`)}
                   className={`w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-md cursor-pointer object-cover ${
-                    selectedImage === `${getBaseUrl()}${img}`
+                    selectedImage === `${img}`
                       ? "ring-2 ring-blue-500"
                       : ""
                   }`}

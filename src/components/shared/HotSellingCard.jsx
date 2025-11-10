@@ -13,7 +13,7 @@ export default function HotSellingCard({ product, image, title, description, id 
   const dispatch = useDispatch();
   const user = useSelector((state) => state?.auth?.user);
   const [addToCartApi, { isLoading }] = useAddToCartMutation();
-  console.log("product id --->", product?.productId)
+
 
   const handleAddToCart = async () => {
     try {
@@ -90,26 +90,33 @@ export default function HotSellingCard({ product, image, title, description, id 
 
   return (
     <div className="bg-[#1E1E1E] rounded-lg p-4 shadow-lg flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:shadow-[#136BFB]/20 hover:-translate-y-1">
-      <div className="relative rounded-md overflow-hidden cursor-pointer aspect-square sm:aspect-[4/5] bg-[#0f0f0f] flex items-center justify-center group">
-        <img
-          src={productImage}
-          alt={productTitle}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src =
-              "https://placehold.co/300x300/171717/ffffff?text=No+Image";
-          }}
-        />
-        <div className="absolute top-2 right-2">
-          <img
-            src="/favourite.svg"
-            alt="heart"
-            className="cursor-pointer hover:scale-110 transition-all duration-300"
-            onClick={handleWishlistClick}
-          />
-        </div>
-      </div>
+    <div className="relative rounded-2xl overflow-hidden cursor-pointer aspect-square sm:aspect-[5/5] bg-[#0f0f0f] flex items-center justify-center group shadow-md hover:shadow-lg transition-shadow duration-300">
+  {/* Product Image */}
+  <img
+    src={productImage}
+    alt={productTitle}
+    className=" object-cover transition-transform duration-700 ease-in-out group-hover:scale-110 group-hover:brightness-110"
+    onError={(e) => {
+      e.target.onerror = null;
+      e.target.src =
+        "https://placehold.co/600x600/171717/ffffff?text=No+Image";
+    }}
+  />
+
+  {/* Gradient overlay (for subtle depth) */}
+  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-80 transition-opacity duration-500"></div>
+
+  {/* Favorite Icon */}
+  {/* <div className="absolute top-3 right-3 z-10">
+    <img
+      src="/favourite.svg"
+      alt="heart"
+      className="w-8 h-8 cursor-pointer drop-shadow-md hover:scale-110 hover:brightness-125 transition-all duration-300"
+      onClick={handleWishlistClick}
+    />
+  </div> */}
+</div>
+
 
       <div className="flex flex-col gap-3 mt-4 flex-1 group-hover:text-white">
         <p className="text-white text-base sm:text-lg font-semibold line-clamp-2 min-h-[2.5rem] sm:min-h-[2.75rem] group-hover:text-[#136BFB] transition-colors">
@@ -138,11 +145,10 @@ export default function HotSellingCard({ product, image, title, description, id 
             onClick={handleAddToCart}
             disabled={isLoading}
             aria-busy={isLoading}
-            className={`flex-1 min-w-0 px-3 py-2 md:px-3 md:py-2 lg:px-3 lg:py-2 rounded-md text-white border transition-colors text-sm md:text-sm lg:text-base truncate flex items-center justify-center gap-2 ${
-              isLoading
+            className={`flex-1 min-w-0 px-3 py-2 md:px-3 md:py-2 lg:px-3 lg:py-2 rounded-md text-white border transition-colors text-sm md:text-sm lg:text-base truncate flex items-center justify-center gap-2 ${isLoading
                 ? "bg-blue-700 border-blue-700 opacity-80 cursor-not-allowed"
                 : "bg-[#136BFB] border-[#136BFB] hover:bg-blue-700"
-            }`}
+              }`}
           >
             {isLoading && (
               <svg

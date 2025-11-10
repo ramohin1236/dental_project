@@ -23,11 +23,9 @@ export default function ProfileCard({
           <img
             src={avatar}
             alt={name}
-            className="w-32 h-32 rounded-full object-cover border-4 border-[#136BFB]"
+            className="w-32 h-32 rounded-full object-cover border-2 border-[#136BFB]"
           />
-          <button className="absolute bottom-2 right-2 bg-[#136BFB] hover:bg-blue-600 rounded-full p-2 transition-colors">
-            <LuCamera className="w-4 h-4 text-white " />
-          </button>
+        
         </div>
 
         <div className="flex items-center gap-2 mb-4 text-center">

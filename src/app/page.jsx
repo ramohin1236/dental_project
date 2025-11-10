@@ -6,10 +6,12 @@ import HotSelling from "../components/home/HotSelling";
 import MagicMoney from "../components/home/MagicMoney";
 import AboutUs from "../components/home/AboutUs";
 import Subscribe from "../components/home/Subscribe";
+import SwipperSlider from './../components/swiper slider/SwipperSlider';
 
 export default function Home() {
   return (
     <div>
+      <SwipperSlider/>
       <Slider />
       <ExploreByCategory />
       <HotSelling />

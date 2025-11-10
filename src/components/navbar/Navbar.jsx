@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLogoutMutation } from "@/redux/feature/auth/authApi";
 import { logout as authLogout } from "@/redux/feature/auth/authSlice";
 import { clearCartLocal } from "@/redux/feature/cart/cartSlice";
+import { useGetMyProfileQuery } from "@/redux/feature/users/usersApi";
 
 export default function Navbar() {
   const products = useSelector((state) => state.cart);
@@ -28,13 +29,16 @@ export default function Navbar() {
   const debounceRef = useRef(null);
   const navigate = useRouter();
   const pathname = usePathname();
-  
+  const { data, isLoading, isFetching, error } = useGetMyProfileQuery();
+  console.log("navbadak", data?.data?.imageUrl)
+  const imagePreview = data?.data?.imageUrl
+
   // Highlight the current active page in navbar
   const isLinkActive = (path) => {
     if (path === '/') {
-      return pathname === path; 
+      return pathname === path;
     }
-    
+
     return pathname.startsWith(path);
   };
   const searchParams = useSearchParams();
@@ -92,11 +96,11 @@ export default function Navbar() {
     if (!pathname) return;
     const isSuccess = pathname.startsWith('/checkout/success') || pathname === '/congratulations';
     if (isSuccess) {
-      try { dispatch(clearCartLocal()); } catch {}
+      try { dispatch(clearCartLocal()); } catch { }
     }
     const oid = searchParams?.get?.('orderId');
     if (oid) {
-      try { dispatch(clearCartLocal()); } catch {}
+      try { dispatch(clearCartLocal()); } catch { }
     }
   }, [pathname, searchParams, dispatch]);
 
@@ -158,7 +162,7 @@ export default function Navbar() {
   const handleLogout = async () => {
     try {
       await logoutApi().unwrap();
-    } catch (e) {}
+    } catch (e) { }
     dispatch(authLogout());
     dispatch(clearCartLocal());
     navigate.push("/sign_in");
@@ -213,7 +217,7 @@ export default function Navbar() {
             >
               Home
             </Link>
-         
+
             <Link
               href="/product"
               className={`${isLinkActive('/product') ? 'text-[#136BFB] font-medium' : 'text-white hover:text-gray-300'} transition-colors`}
@@ -248,7 +252,7 @@ export default function Navbar() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center justify-end space-x-2">
-              <div className="relative">
+            <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <CiSearch className="h-4 w-4 text-[#136BFB]" />
               </div>
@@ -283,13 +287,24 @@ export default function Navbar() {
                       className="flex items-center cursor-pointer group"
                       onClick={toggleDropdown}
                     >
-                      <img
-                        src="https://i.ibb.co.com/RvFgZC8/aman.png"
-                        alt="profile"
-                        height={70}
-                        width={70}
-                        className=" rounded-full"
-                      />
+                      {imagePreview ? (
+                        <img
+                          src={imagePreview}
+                          alt="Profile preview"
+                          className="w-16  object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <img
+                            src="https://i.ibb.co.com/RvFgZC8/aman.png"
+                            alt="profile"
+                            height={70}
+                            width={70}
+                            className=" rounded-full"
+                          />
+                        </div>
+                      )}
+
                     </div>
                     {isDropdownOpen && (
                       <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
@@ -307,13 +322,13 @@ export default function Navbar() {
                         >
                           My Orders
                         </Link>
-                        <Link
+                        {/* <Link
                           href="/favourite"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                           onClick={() => setIsDropdownOpen(false)}
                         >
                           Favourite
-                        </Link>
+                        </Link> */}
                         <Link
                           href="/ai_support"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -367,9 +382,8 @@ export default function Navbar() {
 
       {/* Mobile Menu Overlay and Content */}
       <div
-        className={`fixed inset-0 z-40 transition-opacity duration-300 ${
-          isMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 z-40 transition-opacity duration-300 ${isMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
         onClick={toggleMenu}
       >
         <div className="absolute inset-0 bg-black bg-opacity-50"></div>
@@ -377,9 +391,8 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       <div
-        className={`mobile-menu-container fixed top-0 left-0 h-full w-4/5 max-w-xs bg-[#171716] z-50 transform transition-transform duration-300 ease-in-out ${
-          isMenuOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`mobile-menu-container fixed top-0 left-0 h-full w-4/5 max-w-xs bg-[#171716] z-50 transform transition-transform duration-300 ease-in-out ${isMenuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <div className="p-6 h-full flex flex-col">
           <div className="flex justify-between items-center mb-8">

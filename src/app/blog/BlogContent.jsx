@@ -13,6 +13,7 @@ export default function BlogContent() {
   const category = searchParams.get("category") || "all";
   
   const { data: blogs, isLoading, error } = useFetchAllBlogsQuery({});
+  console.log(blogs)
 
   const filteredBlogs = React.useMemo(() => {
     if (!blogs) return [];
@@ -44,7 +45,7 @@ export default function BlogContent() {
       />
 
       {/* Category filter */}
-      <div className="flex flex-wrap gap-4 mb-8 px-5 md:px-0">
+      {/* <div className="flex flex-wrap gap-4 mb-8 px-5 md:px-0">
         <button
           className={`px-4 py-2 rounded ${
             category === "all" ? "bg-blue-600" : "bg-[#333]"
@@ -69,26 +70,29 @@ export default function BlogContent() {
         >
           Oral Hygiene
         </button>
-      </div>
+      </div> */}
 
       {/* Blog cards */}
-      <div className="flex flex-wrap gap-5 px-5 md:px-0">
-        {filteredBlogs?.map((blog, idx) => (
-          <BlogCard
-            key={idx}
-            image={`${getBaseUrl()}${blog.imageUrl?.[0]}`}
-            id={blog?._id}
-            title={blog?.title}
-            description={blog?.description}
-            date={new Date(blog.createdAt).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-            blogId={blog._id}
-          />
-        ))}
-      </div>
+     <div className="flex flex-wrap gap-5 px-5 md:px-0">
+  {filteredBlogs?.map((blog, idx) => {
+    const shortContent =
+      blog?.content?.length > 150
+        ? blog.content.slice(0, 150) + "..."
+        : blog?.content;
+
+    return (
+      <BlogCard
+        key={idx}
+        image={`${blog.imageUrl?.[0]}`}
+        id={blog?._id}
+        title={blog?.title}
+        description={shortContent} 
+        blogId={blog._id}
+      />
+    );
+  })}
+</div>
+
 
       {filteredBlogs?.length === 0 && (
         <div className="text-center py-10 text-gray-400">

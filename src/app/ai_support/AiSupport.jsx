@@ -27,7 +27,7 @@ export default function AiSupport() {
   const user = useSelector((state) => state?.auth?.user);
   // console.log("UUUSSSEEERRR",user)
   const userImage = user?.image
-  ? `${getBaseUrl()}${user.image}`
+  ? `${user.image}`
   : "/image.png";
 
   const scrollToBottom = () => {
